@@ -39,7 +39,7 @@ export async function startRazorpayCheckout(orderId: string): Promise<{ orderId:
       order_id: data.razorpayOrderId,
       name: 'BloomDidi',
       description: 'Flower delivery',
-      theme: { color: '#D4537E' },
+      theme: { color: '#c14d6e' },
       handler: async (response: {
         razorpay_order_id: string;
         razorpay_payment_id: string;

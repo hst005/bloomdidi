@@ -49,7 +49,6 @@ export class OrdersService {
     };
 
     const order = await this.placeOrder(customerId, placeDto);
-    await this.cart.clearCart(customerId);
     return order;
   }
 

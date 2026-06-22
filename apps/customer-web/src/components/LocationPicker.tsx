@@ -56,19 +56,26 @@ export function LocationPicker({ open, onClose }: LocationPickerProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/60"
+            className="bd-sheet-backdrop"
           />
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="fixed inset-x-0 bottom-0 z-50 bg-slate-900 border-t border-slate-700 rounded-t-2xl max-h-[80vh] overflow-hidden flex flex-col"
+            className="bd-sheet"
           >
-            <div className="px-4 pt-4 pb-2 border-b border-slate-800">
-              <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-4" />
-              <h2 className="text-lg font-semibold text-white">Deliver to</h2>
-              <p className="text-slate-400 text-sm mt-1">Choose your area to see nearby florists</p>
+            <div className="px-4 pt-4 pb-2" style={{ borderBottom: '1px solid var(--bd-border)' }}>
+              <div
+                className="w-10 h-1 rounded-full mx-auto mb-4"
+                style={{ background: 'var(--bd-border)' }}
+              />
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--bd-ink)' }}>
+                Deliver to
+              </h2>
+              <p className="text-sm mt-1" style={{ color: 'var(--bd-ink-soft)' }}>
+                Choose your area to see nearby florists
+              </p>
             </div>
 
             <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2">
@@ -76,20 +83,31 @@ export function LocationPicker({ open, onClose }: LocationPickerProps) {
                 type="button"
                 onClick={useMyLocation}
                 disabled={geoLoading}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-600/20 border border-brand-500/40 text-left hover:bg-brand-600/30 transition-colors disabled:opacity-50"
+                className="bd-sheet-option bd-sheet-option-highlight disabled:opacity-50"
               >
                 <span className="text-xl">🎯</span>
                 <div>
-                  <p className="font-medium text-brand-300">
+                  <p className="font-medium" style={{ color: 'var(--bd-rose)' }}>
                     {geoLoading ? 'Getting location…' : 'Use my current location'}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">Requires browser permission</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--bd-ink-soft)' }}>
+                    Requires browser permission
+                  </p>
                 </div>
               </button>
 
-              {geoError && <p className="text-amber-400 text-xs px-1">{geoError}</p>}
+              {geoError && (
+                <p className="text-xs px-1" style={{ color: 'var(--bd-amber)' }}>
+                  {geoError}
+                </p>
+              )}
 
-              <p className="text-xs text-slate-500 uppercase tracking-wider pt-2 px-1">Popular areas</p>
+              <p
+                className="text-xs uppercase tracking-wider pt-2 px-1"
+                style={{ color: 'var(--bd-ink-soft)' }}
+              >
+                Popular areas
+              </p>
 
               {PRESET_LOCATIONS.map((preset) => {
                 const selected =
@@ -101,28 +119,26 @@ export function LocationPicker({ open, onClose }: LocationPickerProps) {
                     key={preset.label}
                     type="button"
                     onClick={() => select(preset)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
-                      selected
-                        ? 'bg-slate-800 border border-brand-500/50'
-                        : 'bg-slate-800/50 border border-slate-800 hover:border-slate-600'
-                    }`}
+                    className={`bd-sheet-option${selected ? ' is-selected' : ''}`}
                   >
                     <span className="text-lg">📍</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-white truncate">{preset.label}</p>
+                      <p className="font-medium truncate" style={{ color: 'var(--bd-ink)' }}>
+                        {preset.label}
+                      </p>
                     </div>
-                    {selected && <span className="text-brand-400 text-sm shrink-0">✓</span>}
+                    {selected && (
+                      <span className="text-sm shrink-0" style={{ color: 'var(--bd-rose)' }}>
+                        ✓
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
 
-            <div className="p-4 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-full py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm hover:bg-slate-800"
-              >
+            <div className="p-4" style={{ borderTop: '1px solid var(--bd-border)' }}>
+              <button type="button" onClick={onClose} className="bd-btn bd-btn-outline w-full">
                 Cancel
               </button>
             </div>

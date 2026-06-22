@@ -34,7 +34,10 @@ html {
 }
 
 body {
-  @apply bg-cream text-brand-900 font-sans antialiased;
+  background: var(--bd-bg);
+  color: var(--bd-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-display {

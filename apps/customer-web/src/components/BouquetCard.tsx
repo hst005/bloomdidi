@@ -32,7 +32,7 @@ export function BouquetCard({ product, shop, index = 0 }: BouquetCardProps) {
         console.error(err);
       }
     } else {
-      addItem(shop.id, item);
+      addItem(shop.id, shop.name, item);
     }
   };
 

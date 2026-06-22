@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { Order, Product, Shop } from '@bloomdidi/shared';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
+import { ThemeToggle } from '@bloomdidi/design/ThemeToggle';
 import { OrdersPanel } from '../components/OrdersPanel';
 import { InventoryPanel } from '../components/InventoryPanel';
 import { EarningsPanel } from '../components/EarningsPanel';
@@ -62,21 +63,35 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col w-full min-w-0 overflow-x-hidden bd-ambient">
-      <header className="bg-slate-850 text-white shrink-0">
+      <header
+        className="shrink-0"
+        style={{
+          background: 'var(--bd-surface)',
+          borderBottom: '1px solid var(--bd-border)',
+          color: 'var(--bd-ink)',
+        }}
+      >
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pr-12 py-4 flex items-center justify-between gap-4 min-w-0">
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold truncate">BloomDidi Vendor</h1>
+            <h1 className="text-lg sm:text-xl font-bold truncate">
+              Bloom<span style={{ color: 'var(--bd-rose)' }}>Didi</span> Vendor
+            </h1>
             {currentShop && (
-              <p className="text-sm text-slate-400 truncate">{currentShop.name}</p>
+              <p className="text-sm truncate" style={{ color: 'var(--bd-ink-soft)' }}>
+                {currentShop.name}
+              </p>
             )}
           </div>
-          <button
-            type="button"
-            onClick={logout}
-            className="text-sm text-slate-400 hover:text-white shrink-0 whitespace-nowrap"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={logout}
+              className="bd-btn bd-btn-ghost text-sm"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -101,11 +116,7 @@ export function DashboardPage() {
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
-                tab === t
-                  ? 'bg-brand-600 text-white'
-                  : 'bg-white text-slate-600 border border-slate-200'
-              }`}
+              className={`bd-filter-chip capitalize${tab === t ? ' is-active' : ''}`}
             >
               {t}
               {t === 'orders' && activeOrderCount > 0 && (

@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { ThemeToggle } from '@bloomdidi/design/ThemeToggle';
 import { api } from '../lib/api';
 
 const NAV = [
@@ -45,7 +46,8 @@ export function AdminLayout() {
         <p style={{ fontSize: 12, color: 'var(--bd-ink-soft)', marginTop: -12, marginBottom: 16 }}>
           Admin
         </p>
-        <nav style={{ flex: 1 }}>
+        <ThemeToggle />
+        <nav style={{ flex: 1, marginTop: 12 }}>
           {NAV.map(({ to, label, ...rest }) => (
             <NavLink
               key={to}

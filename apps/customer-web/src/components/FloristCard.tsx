@@ -30,31 +30,49 @@ export function FloristCard({ florist, index = 0 }: { florist: Florist; index?: 
     >
       <Link
         to={`/shop/${florist.id}`}
-        className="block bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-colors h-full"
+        className="bd-card bd-rise bd-card-static"
+        style={{
+          display: 'block',
+          overflow: 'hidden',
+          textDecoration: 'none',
+          color: 'inherit',
+          background: 'var(--bd-surface)',
+          cursor: 'pointer',
+        }}
       >
-        <div className="aspect-[16/10] overflow-hidden">
+        <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
           <FlowerImage
             name={florist.name}
             imageUrl={florist.imageUrl}
             className="w-full h-full"
-            imgClassName="w-full h-full object-cover opacity-90"
+            imgClassName="w-full h-full object-cover"
           />
         </div>
-        <div className="p-3.5">
-          <div className="flex justify-between items-start gap-2">
-            <h3 className="font-medium text-white">{florist.name}</h3>
-            <span className="shrink-0 text-brand-400 text-sm font-medium whitespace-nowrap">
+        <div style={{ padding: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+            <span style={{ fontWeight: 500, color: 'var(--bd-ink)' }}>{florist.name}</span>
+            <span style={{ color: 'var(--bd-green)', fontSize: 13, whiteSpace: 'nowrap' }}>
               ★ {florist.rating.toFixed(1)}
             </span>
           </div>
-          <p className="text-slate-400 text-sm mt-0.5">{categories.replace(/ • /g, ' · ')}</p>
-          <div className="flex items-center gap-3 mt-2.5 text-xs text-slate-500">
+          <div style={{ fontSize: 13, color: 'var(--bd-ink-soft)', marginTop: 3 }}>
+            {categories.replace(/ • /g, ' · ')}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              marginTop: 10,
+              fontSize: 12,
+              color: 'var(--bd-ink-soft)',
+            }}
+          >
             <span>{formatDistance(florist.distanceKm)}</span>
             <span>
               {florist.deliveryEtaMin}–{florist.deliveryEtaMax} min
             </span>
             {florist.minPricePaise != null && (
-              <span className="text-slate-300 ml-auto">
+              <span style={{ marginLeft: 'auto', color: 'var(--bd-ink)' }}>
                 From {formatPrice(florist.minPricePaise)}
               </span>
             )}

@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@bloomdidi/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
+      '@bloomdidi/design': path.resolve(__dirname, '../../packages/design'),
     },
   },
   server: {

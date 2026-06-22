@@ -1,84 +1,172 @@
-import { useEffect, useRef, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { api } from '../lib/api';
+import { CartBar } from '../components/CartBar';
 import { FlowerImage } from '../components/FlowerImage';
-import { BouquetCard } from '../components/BouquetCard';
-import { FeedGrid, PageContainer } from '../components/PageContainer';
+import { MenuProductCard } from '../components/MenuProductCard';
+import { PageContainer } from '../components/PageContainer';
+import { useMenuCart } from '../lib/menu-cart';
 import { useMotionPrefs } from '../store/cart';
 import type { Product, Shop } from '@bloomdidi/shared';
+
+function ShopMenu({ shop, products }: { shop: Shop; products: Product[] }) {
+  const menuCart = useMenuCart(shop, products);
+
+  return (
+    <>
+      <PageContainer>
+        {shop.description && (
+          <p style={{ color: 'var(--bd-ink-soft)', maxWidth: 640, margin: '20px 0' }}>
+            {shop.description}
+          </p>
+        )}
+        <h2 className="font-display" style={{ color: 'var(--bd-ink)', margin: '8px 0 0' }}>
+          Menu
+        </h2>
+        {products.length === 0 ? (
+          <p style={{ color: 'var(--bd-ink-soft)', padding: '24px 0' }}>No products available.</p>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: 16,
+              padding: '12px 0 32px',
+            }}
+          >
+            {products.map((product, i) => {
+              const qty = menuCart.getQty(product.id);
+              const maxQty = Math.min(product.stockQty, 99);
+              return (
+                <MenuProductCard
+                  key={product.id}
+                  product={product}
+                  shop={shop}
+                  index={i}
+                  qty={qty}
+                  onAdd={() => menuCart.addOne(product)}
+                  onDec={() => menuCart.setQty(product, qty - 1)}
+                  onInc={() => menuCart.setQty(product, Math.min(maxQty, qty + 1))}
+                />
+              );
+            })}
+          </div>
+        )}
+      </PageContainer>
+
+      {menuCart.cartIsThisShop && (
+        <CartBar count={menuCart.count} subtotal={menuCart.subtotal} />
+      )}
+    </>
+  );
+}
 
 export function ShopPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll();
+  const [loading, setLoading] = useState(true);
   const reduced = useMotionPrefs((s) => s.reducedMotion);
-
-  const parallaxY = useTransform(scrollY, [0, 280], [0, reduced ? 0 : 60]);
-  const parallaxScale = useTransform(scrollY, [0, 280], [1, reduced ? 1 : 1.08]);
 
   useEffect(() => {
     if (!shopId) return;
-    api.fetch<Shop>(`/shops/${shopId}`).then(setShop).catch(() => setShop(null));
-    api.fetch<Product[]>(`/catalog/shops/${shopId}/products`).then(setProducts).catch(() => setProducts([]));
+    setLoading(true);
+    Promise.all([
+      api.fetch<Shop>(`/shops/${shopId}`),
+      api.fetch<Product[]>(`/catalog/shops/${shopId}/products`),
+    ])
+      .then(([s, p]) => {
+        setShop(s);
+        setProducts(p);
+      })
+      .catch(() => {
+        setShop(null);
+        setProducts([]);
+      })
+      .finally(() => setLoading(false));
   }, [shopId]);
+
+  if (loading) {
+    return (
+      <div style={{ background: 'var(--bd-bg)', minHeight: '100vh' }}>
+        <div className="bd-skeleton" style={{ height: 240, borderRadius: 0 }} />
+        <PageContainer>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: 16,
+              padding: '24px 0',
+            }}
+          >
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bd-skeleton" style={{ height: 260 }} />
+            ))}
+          </div>
+        </PageContainer>
+      </div>
+    );
+  }
 
   if (!shop) {
     return (
-      <PageContainer className="py-12">
-        <div className="h-64 rounded-2xl bg-brand-100 animate-pulse" />
+      <PageContainer className="py-16 text-center">
+        <p style={{ color: 'var(--bd-ink-soft)' }}>Florist not found.</p>
+        <Link to="/" style={{ color: 'var(--bd-rose)' }}>
+          ← Back to discover
+        </Link>
       </PageContainer>
     );
   }
 
   return (
     <motion.div
-      initial={reduced ? false : { opacity: 0, x: 30 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -30 }}
-      transition={{ duration: 0.35 }}
+      initial={reduced ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{ background: 'var(--bd-bg)', minHeight: '100vh', paddingBottom: 80 }}
     >
-      <div ref={headerRef} className="relative h-[280px] overflow-hidden">
-        <motion.div style={{ y: parallaxY, scale: parallaxScale }} className="absolute inset-0">
-          <FlowerImage
-            name={shop.name}
-            imageUrl={shop.imageUrl}
-            className="w-full h-full"
-            imgClassName="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-900/70 via-brand-900/20 to-transparent" />
-        </motion.div>
-        <PageContainer className="relative z-10 h-full flex flex-col justify-end pb-6">
-          <Link to="/" className="text-brand-200 text-sm mb-2 hover:text-white transition-colors">
-            ← Back to discover
-          </Link>
-          <h1 className="font-display text-3xl md:text-4xl text-white">{shop.name}</h1>
-          <div className="flex items-center gap-3 mt-2 text-brand-100 text-sm flex-wrap">
-            <span>★ {shop.rating.toFixed(1)}</span>
-            <span>·</span>
-            <span>{shop.reviewCount} reviews</span>
-            <span>·</span>
-            <span>{shop.deliveryRadiusKm} km delivery</span>
-          </div>
-        </PageContainer>
+      <div style={{ position: 'relative', height: 240, overflow: 'hidden' }}>
+        <FlowerImage
+          name={shop.name}
+          imageUrl={shop.imageUrl}
+          className="w-full h-full"
+          imgClassName="w-full h-full object-cover"
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.05))',
+          }}
+        />
+        <div style={{ position: 'absolute', bottom: 16, left: 0, right: 0 }}>
+          <PageContainer>
+            <Link
+              to="/"
+              style={{
+                color: 'rgba(255,255,255,0.85)',
+                fontSize: 13,
+                textDecoration: 'none',
+              }}
+            >
+              ← Back to discover
+            </Link>
+            <h1
+              className="font-display"
+              style={{ color: '#fff', margin: '6px 0 4px', fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}
+            >
+              {shop.name}
+            </h1>
+            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14 }}>
+              ★ {shop.rating.toFixed(1)} · {shop.reviewCount} reviews · {shop.deliveryRadiusKm} km
+              delivery
+            </div>
+          </PageContainer>
+        </div>
       </div>
 
-      <PageContainer className="py-10">
-        <p className="text-brand-500 max-w-2xl">{shop.description}</p>
-
-        <h2 className="font-display text-2xl text-brand-800 mt-10 mb-6">Menu</h2>
-        {products.length === 0 ? (
-          <p className="text-brand-400">No products available.</p>
-        ) : (
-          <FeedGrid>
-            {products.map((product, i) => (
-              <BouquetCard key={product.id} product={product} shop={shop} index={i} />
-            ))}
-          </FeedGrid>
-        )}
-      </PageContainer>
+      <ShopMenu shop={shop} products={products} />
     </motion.div>
   );
 }

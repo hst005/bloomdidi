@@ -42,7 +42,7 @@ export function ProductPage() {
         console.error(err);
       }
     } else {
-      addItem(shop.id, item);
+      addItem(shop.id, shop.name, item);
     }
     setAdded(true);
   };

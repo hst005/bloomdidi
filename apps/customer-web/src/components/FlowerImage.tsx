@@ -46,18 +46,31 @@ export function FlowerImage({
     const inner = (
       <>
         <FlowerIcon className="w-10 h-10 md:w-12 md:h-12 opacity-70 shrink-0" />
-        <span className="mt-2 px-3 text-center text-xs md:text-sm font-medium text-brand-700 line-clamp-2 max-w-full">
+        <span
+          className="mt-2 px-3 text-center text-xs md:text-sm font-medium line-clamp-2 max-w-full"
+          style={{ color: 'var(--bd-rose)' }}
+        >
           {name}
         </span>
       </>
     );
-    const placeholderClass = `flex flex-col items-center justify-center bg-gradient-to-br from-rose-100 via-pink-50 to-brand-50 text-brand-600 ${className}`;
+    const placeholderStyle: React.CSSProperties = {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bd-rose-soft)',
+      color: 'var(--bd-rose)',
+    };
+    const placeholderClass = className;
     return layoutId ? (
-      <motion.div layoutId={layoutId} className={placeholderClass}>
+      <motion.div layoutId={layoutId} className={placeholderClass} style={placeholderStyle}>
         {inner}
       </motion.div>
     ) : (
-      <div className={placeholderClass}>{inner}</div>
+      <div className={placeholderClass} style={placeholderStyle}>
+        {inner}
+      </div>
     );
   }
 

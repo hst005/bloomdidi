@@ -22,7 +22,7 @@ export function LoginPage() {
   const clearLocalCart = useCartStore((s) => s.clear);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirect = searchParams.get('redirect') ?? '/';
+  const redirect = searchParams.get('redirect') ?? searchParams.get('next') ?? '/';
 
   const handleSendOtp = async () => {
     setError('');

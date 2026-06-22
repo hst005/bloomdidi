@@ -5,6 +5,7 @@ import * as crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { CartService } from '../cart/cart.service';
 
 @Injectable()
 export class PaymentsService {
@@ -15,6 +16,7 @@ export class PaymentsService {
     private prisma: PrismaService,
     private config: ConfigService,
     private notifications: NotificationsService,
+    private cart: CartService,
   ) {
     const keyId = this.config.get<string>('RAZORPAY_KEY_ID');
     const keySecret = this.config.get<string>('RAZORPAY_KEY_SECRET');
@@ -129,6 +131,8 @@ export class PaymentsService {
     if (order.status === OrderStatus.PLACED) {
       await this.notifications.notifyVendorNewOrder(order.shop.ownerId, order.id);
     }
+
+    await this.cart.clearCart(customerId);
 
     return { orderId: order.id, status: order.status };
   }
