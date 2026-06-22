@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { api } from '../lib/api';
 import { CartBar } from '../components/CartBar';
 import { FlowerImage } from '../components/FlowerImage';
-import { MenuProductCard } from '../components/MenuProductCard';
+import { BouquetCard } from '../components/BouquetCard';
 import { PageContainer } from '../components/PageContainer';
 import { useMenuCart } from '../lib/menu-cart';
 import { useMotionPrefs } from '../store/cart';
@@ -39,7 +39,7 @@ function ShopMenu({ shop, products }: { shop: Shop; products: Product[] }) {
               const qty = menuCart.getQty(product.id);
               const maxQty = Math.min(product.stockQty, 99);
               return (
-                <MenuProductCard
+                <BouquetCard
                   key={product.id}
                   product={product}
                   shop={shop}

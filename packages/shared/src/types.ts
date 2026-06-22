@@ -13,6 +13,14 @@ export interface User {
   createdAt: string;
 }
 
+export interface ShopDayHours {
+  open: string;
+  close: string;
+  closed: boolean;
+}
+
+export type ShopOpeningHours = Record<string, ShopDayHours>;
+
 export interface Shop {
   id: string;
   ownerId: string;
@@ -24,6 +32,7 @@ export interface Shop {
   isOpen: boolean;
   deliveryRadiusKm: number;
   imageUrl: string | null;
+  openingHours?: ShopOpeningHours | null;
   distanceKm?: number;
 }
 

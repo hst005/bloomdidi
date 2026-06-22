@@ -46,11 +46,20 @@ body {
 
 .card-perspective {
   perspective: 1200px;
+  -webkit-perspective: 1200px;
+  height: 100%;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .card-flip-inner {
+  position: relative;
+  height: 100%;
+  min-height: 100%;
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
 
 .card-flip-inner.is-flipped {
@@ -59,8 +68,175 @@ body {
 
 .card-face {
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-face-front {
+  position: relative;
+  z-index: 2;
+  transform: rotateY(0deg) translateZ(1px);
 }
 
 .card-face-back {
-  transform: rotateY(180deg);
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg) translateZ(1px);
+}
+
+/* Fixed-height flip card — both faces match so nothing jumps mid-flip */
+.bouquet-card-wrap {
+  height: 100%;
+  /* Avoid parent transforms breaking preserve-3d (Framer only fades this in) */
+  transform: translateZ(0);
+}
+
+.card-perspective {
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-perspective {
+    cursor: default;
+  }
+}
+
+.bouquet-card-face {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--bd-radius-lg);
+  border: 1px solid var(--bd-border);
+  overflow: hidden;
+  box-shadow: var(--bd-shadow-sm);
+}
+
+.bouquet-card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.bouquet-card-media {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.bouquet-card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--bd-rose) 88%, black);
+  color: #fff;
+}
+
+.bouquet-card-body {
+  padding: 14px;
+  flex: 1;
+}
+
+.bouquet-card-shop {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bd-rose);
+  margin: 0;
+}
+
+.bouquet-card-title {
+  font-size: 1.05rem;
+  color: var(--bd-ink);
+  margin: 4px 0 0;
+  line-height: 1.3;
+}
+
+.bouquet-card-price {
+  font-weight: 600;
+  color: var(--bd-ink);
+  margin: 8px 0 0;
+  font-size: 15px;
+}
+
+.bouquet-card-back {
+  height: 100%;
+  border-radius: var(--bd-radius-lg);
+  background: var(--bd-rose);
+  color: var(--bd-rose-on);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--bd-shadow-md);
+}
+
+.bouquet-card-back-title {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.bouquet-card-back-desc {
+  font-size: 13px;
+  margin: 8px 0 0;
+  opacity: 0.9;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bouquet-card-back-price {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 12px 0 0;
+}
+
+.bouquet-card-back-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.bouquet-card-add-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--bd-radius);
+  background: var(--bd-surface);
+  color: var(--bd-rose);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.bouquet-card-flip-hint {
+  font-size: 11px;
+  text-align: center;
+  opacity: 0.75;
+  margin: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bouquet-card-flip-hint--touch {
+    display: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .bouquet-card-flip-hint--hover {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-inner {
+    transition: none !important;
+  }
 }

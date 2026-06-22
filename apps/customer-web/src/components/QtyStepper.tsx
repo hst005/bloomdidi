@@ -3,17 +3,19 @@ interface QtyStepperProps {
   onDec: () => void;
   onInc: () => void;
   max?: number;
+  variant?: 'default' | 'on-rose';
 }
 
-export function QtyStepper({ qty, onDec, onInc, max = 99 }: QtyStepperProps) {
+export function QtyStepper({ qty, onDec, onInc, max = 99, variant = 'default' }: QtyStepperProps) {
+  const onRose = variant === 'on-rose';
   const btnStyle: React.CSSProperties = {
     border: 'none',
     cursor: 'pointer',
     width: 28,
     height: 28,
     borderRadius: 8,
-    background: 'var(--bd-rose-soft)',
-    color: 'var(--bd-rose)',
+    background: onRose ? 'var(--bd-surface)' : 'var(--bd-rose-soft)',
+    color: onRose ? 'var(--bd-rose)' : 'var(--bd-rose)',
     fontSize: 16,
     display: 'flex',
     alignItems: 'center',
@@ -30,7 +32,7 @@ export function QtyStepper({ qty, onDec, onInc, max = 99 }: QtyStepperProps) {
           fontWeight: 500,
           minWidth: 16,
           textAlign: 'center',
-          color: 'var(--bd-ink)',
+          color: onRose ? 'var(--bd-rose-on)' : 'var(--bd-ink)',
         }}
       >
         {qty}

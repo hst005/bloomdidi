@@ -1,5 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+
+const DEFAULT_HOURS: Record<string, { open: string; close: string; closed: boolean }> = {
+  Mon: { open: '09:00', close: '21:00', closed: false },
+  Tue: { open: '09:00', close: '21:00', closed: false },
+  Wed: { open: '09:00', close: '21:00', closed: false },
+  Thu: { open: '09:00', close: '21:00', closed: false },
+  Fri: { open: '09:00', close: '21:00', closed: false },
+  Sat: { open: '09:00', close: '21:00', closed: false },
+  Sun: { open: '10:00', close: '20:00', closed: false },
+};
 
 @Injectable()
 export class ShopsService {
@@ -55,6 +66,7 @@ export class ShopsService {
     isOpen: boolean;
     deliveryRadiusKm: number;
     imageUrl: string | null;
+    openingHours?: Prisma.JsonValue;
   }) {
     return {
       id: shop.id,
@@ -67,6 +79,14 @@ export class ShopsService {
       isOpen: shop.isOpen,
       deliveryRadiusKm: shop.deliveryRadiusKm,
       imageUrl: shop.imageUrl,
+      openingHours: this.parseHours(shop.openingHours),
     };
+  }
+
+  private parseHours(raw?: Prisma.JsonValue) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return { ...DEFAULT_HOURS };
+    }
+    return { ...DEFAULT_HOURS, ...(raw as Record<string, { open: string; close: string; closed: boolean }>) };
   }
 }

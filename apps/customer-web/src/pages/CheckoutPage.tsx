@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import type { Address, Shop } from '@bloomdidi/shared';
 import { api, formatPrice } from '../lib/api';
 import { startRazorpayCheckout } from '../lib/checkout';
-import { DELIVERY_SLOTS, slotToScheduledFor, type DeliverySlotId } from '../lib/delivery-slots';
+import { buildDeliverySlots, slotToScheduledFor } from '../lib/delivery-slots';
 import { isLoggedIn } from '../lib/cart-api';
 import { useCheckoutCart } from '../lib/useCheckoutCart';
 import { FlowerImage } from '../components/FlowerImage';
 import { MiniStepper } from '../components/MiniStepper';
 import { useMotionPrefs } from '../store/cart';
-import type { Address } from '@bloomdidi/shared';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
@@ -18,9 +18,26 @@ export function CheckoutPage() {
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressId, setAddressId] = useState<string | null>(null);
-  const [slot, setSlot] = useState<DeliverySlotId | null>(null);
+  const [slot, setSlot] = useState<string | null>(null);
+  const [shopHours, setShopHours] = useState<Shop['openingHours']>(null);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
+
+  const deliverySlots = useMemo(() => buildDeliverySlots(shopHours), [shopHours]);
+
+  useEffect(() => {
+    if (!cart.shopId) return;
+    api
+      .fetch<Shop>(`/shops/${cart.shopId}`)
+      .then((s) => setShopHours(s.openingHours ?? null))
+      .catch(() => setShopHours(null));
+  }, [cart.shopId]);
+
+  useEffect(() => {
+    if (slot && !deliverySlots.some((s) => s.id === slot)) {
+      setSlot(null);
+    }
+  }, [deliverySlots, slot]);
 
   useEffect(() => {
     if (!isLoggedIn()) return;
@@ -59,7 +76,7 @@ export function CheckoutPage() {
         body: JSON.stringify({
           shopId: cart.shopId,
           addressId,
-          scheduledFor: slotToScheduledFor(slot),
+          scheduledFor: slotToScheduledFor(slot, deliverySlots),
           paymentMethod: 'UPI',
           items: cart.orderItems,
         }),
@@ -188,18 +205,24 @@ export function CheckoutPage() {
       </CheckoutSection>
 
       <CheckoutSection title="Delivery slot">
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {DELIVERY_SLOTS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setSlot(s.id)}
-              className={`bd-filter-chip${slot === s.id ? ' is-active' : ''}`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        {deliverySlots.length === 0 ? (
+          <p style={{ fontSize: 13, color: 'var(--bd-ink-soft)', margin: 0 }}>
+            No delivery slots available right now. Try again during shop hours.
+          </p>
+        ) : (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {deliverySlots.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setSlot(s.id)}
+                className={`bd-filter-chip${slot === s.id ? ' is-active' : ''}`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
       </CheckoutSection>
 
       <CheckoutSection>
