@@ -21,5 +21,7 @@ COPY --from=builder /app/apps/api/prisma apps/api/prisma
 # Fresh prod install so workspace-scoped deps (e.g. @thallesp/nestjs-better-auth) land correctly
 RUN npm ci --workspace=@bloomdidi/api --include-workspace-root --omit=dev
 WORKDIR /app/apps/api
+# Generated client from builder is not kept; regenerate for runtime PrismaClient
+RUN npx prisma@6.19.3 generate
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma@6.19.3 migrate deploy && node dist/main.js"]
