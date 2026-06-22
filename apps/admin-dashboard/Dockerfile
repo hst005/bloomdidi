@@ -2,7 +2,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json .npmrc ./
 COPY packages/design ./packages/design
 COPY apps/admin-dashboard ./apps/admin-dashboard
 
@@ -17,5 +17,5 @@ FROM node:20-alpine
 WORKDIR /app
 RUN npm install -g serve@14
 COPY --from=builder /app/apps/admin-dashboard/dist ./dist
-EXPOSE 3000
-CMD ["sh", "-c", "serve dist -s -l ${PORT:-3000}"]
+EXPOSE 8080
+CMD ["sh", "-c", "serve dist -s -p ${PORT:-8080}"]

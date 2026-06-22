@@ -29,7 +29,7 @@ VITE_API_ORIGIN=https://bloomdidiapi-production.up.railway.app
 VITE_API_URL=https://bloomdidiapi-production.up.railway.app/api/v1
 ```
 
-Public port: match Railway `PORT` (often `3000` after deploy — check Deploy logs for `serve` listening port).
+Public port: match Railway **Variables → PORT** (usually **8080**). Generate domain with that port — not 3000.
 
 ## @bloomdidi/vendor-dashboard
 
