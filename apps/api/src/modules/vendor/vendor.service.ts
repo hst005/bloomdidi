@@ -22,6 +22,7 @@ type ShopRow = {
   imageUrl: string | null;
   isOpen: boolean;
   deliveryRadiusKm: number;
+  deliveryFeePaise: number;
   openingHours: Prisma.JsonValue;
   bankAccountName: string | null;
   bankAccountLast4: string | null;
@@ -384,6 +385,15 @@ export class VendorService {
     return this.mapStore(shop);
   }
 
+  async patchStoreDeliveryFee(shopId: string, ownerId: string, deliveryFeePaise: number) {
+    await this.assertShopOwner(shopId, ownerId);
+    const shop = await this.prisma.shop.update({
+      where: { id: shopId },
+      data: { deliveryFeePaise },
+    });
+    return this.mapStore(shop);
+  }
+
   async patchStore(shopId: string, ownerId: string, dto: PatchStoreDto) {
     await this.assertShopOwner(shopId, ownerId);
 
@@ -430,6 +440,7 @@ export class VendorService {
       isOpen: shop.isOpen,
       serviceRadiusKm: shop.deliveryRadiusKm,
       deliveryRadiusKm: shop.deliveryRadiusKm,
+      deliveryFeePaise: shop.deliveryFeePaise,
       hours,
       bank:
         shop.bankAccountLast4 && shop.bankIfsc

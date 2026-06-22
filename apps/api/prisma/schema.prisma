@@ -68,24 +68,77 @@ enum DeliveryStatus {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  phone        String    @unique
-  email        String?   @unique
-  passwordHash String?   @map("password_hash")
-  name         String?
-  role         UserRole  @default(CUSTOMER)
-  refreshToken String?   @map("refresh_token")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(uuid())
+  phone               String    @unique
+  email               String?   @unique
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  passwordHash        String?   @map("password_hash")
+  name                String?
+  image               String?
+  phoneNumber         String?   @unique @map("phone_number")
+  phoneNumberVerified Boolean   @default(false) @map("phone_number_verified")
+  role                UserRole  @default(CUSTOMER)
+  refreshToken        String?   @map("refresh_token")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  shops     Shop[]
-  orders    Order[]
-  addresses Address[]
-  reviews   Review[]
+  shops      Shop[]
+  orders     Order[]
+  addresses  Address[]
+  reviews    Review[]
   deliveries Delivery[] @relation("RiderDeliveries")
-  cart      Cart?
+  cart       Cart?
+  sessions   Session[]
+  accounts   Account[]
 
   @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime @map("expires_at")
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("verifications")
 }
 
 model Shop {
@@ -109,6 +162,7 @@ model Shop {
   bankIfsc         String?      @map("bank_ifsc")
   categories       String?      @default("Bouquets • Roses • Gifting")
   minPricePaise    Int?         @map("min_price_paise")
+  deliveryFeePaise Int          @default(4000) @map("delivery_fee_paise")
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 

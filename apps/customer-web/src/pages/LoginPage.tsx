@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { PageContainer } from '../components/PageContainer';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { api } from '../lib/api';
+import { authClient } from '../lib/auth-client';
 import { useAuthStore } from '../store/auth';
 import { syncLocalCartToServer } from '../lib/cart-api';
 import { useCartStore } from '../store/cart';
@@ -28,7 +28,7 @@ export function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await api.fetch('/auth/otp/send', { method: 'POST', body: JSON.stringify({ phone }) });
+      await authClient.phoneNumber.sendOtp({ phoneNumber: phone });
       setOtpSent(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to send OTP');

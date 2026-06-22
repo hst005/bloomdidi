@@ -14,7 +14,7 @@ export function FeedGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="grid gap-4 py-3.5 pb-8"
-      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}
     >
       {children}
     </div>

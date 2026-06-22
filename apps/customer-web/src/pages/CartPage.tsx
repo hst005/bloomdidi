@@ -5,7 +5,7 @@ import { api, formatPrice } from '../lib/api';
 import { FlowerImage } from '../components/FlowerImage';
 import { PageContainer } from '../components/PageContainer';
 import { useCartStore, useMotionPrefs } from '../store/cart';
-import type { Product } from '@bloomdidi/shared';
+import type { Product, Shop } from '@bloomdidi/shared';
 import {
   clearServerCart,
   fetchCart,
@@ -14,6 +14,7 @@ import {
   updateCartItem,
   type ServerCart,
 } from '../lib/cart-api';
+import { DISPLAY_DELIVERY_FEE_PAISE } from '../lib/delivery-slots';
 
 export function CartPage() {
   const localItems = useCartStore((s) => s.items);
@@ -23,6 +24,7 @@ export function CartPage() {
   const localClear = useCartStore((s) => s.clear);
   const [serverCart, setServerCart] = useState<ServerCart | null>(null);
   const [products, setProducts] = useState<Map<string, Product>>(new Map());
+  const [guestDeliveryFee, setGuestDeliveryFee] = useState(DISPLAY_DELIVERY_FEE_PAISE);
   const [loading, setLoading] = useState(isLoggedIn());
   const navigate = useNavigate();
   const reduced = useMotionPrefs((s) => s.reducedMotion);
@@ -53,6 +55,10 @@ export function CartPage() {
       .fetch<Product[]>(`/catalog/shops/${localShopId}/products`)
       .then((list) => setProducts(new Map(list.map((p) => [p.id, p]))))
       .catch(() => setProducts(new Map()));
+    api
+      .fetch<Shop>(`/shops/${localShopId}`)
+      .then((s) => setGuestDeliveryFee(s.deliveryFeePaise ?? DISPLAY_DELIVERY_FEE_PAISE))
+      .catch(() => setGuestDeliveryFee(DISPLAY_DELIVERY_FEE_PAISE));
   }, [localShopId, localItems.length]);
 
   const useServer = isLoggedIn() && serverCart !== null;
@@ -61,7 +67,7 @@ export function CartPage() {
     const customTotal = item.customizations.reduce((s, c) => s + c.priceDelta, 0);
     return sum + (p ? p.basePrice + customTotal : 0) * item.qty;
   }, 0);
-  const guestDeliveryFee = 5000;
+  const guestDeliveryFeeAmount = guestDeliveryFee;
   const items = useServer
     ? serverCart.items.map((i) => ({
         productId: i.productId,
@@ -85,8 +91,8 @@ export function CartPage() {
       });
 
   const subtotal = useServer ? serverCart!.subtotal : guestSubtotal;
-  const deliveryFee = useServer ? serverCart!.deliveryFee : guestDeliveryFee;
-  const total = useServer ? serverCart!.total : guestSubtotal + guestDeliveryFee;
+  const deliveryFee = useServer ? serverCart!.deliveryFee : guestDeliveryFeeAmount;
+  const total = useServer ? serverCart!.total : guestSubtotal + guestDeliveryFeeAmount;
 
   const handleRemove = async (productId: string) => {
     if (useServer) {

@@ -66,6 +66,7 @@ export class ShopsService {
     isOpen: boolean;
     deliveryRadiusKm: number;
     imageUrl: string | null;
+    deliveryFeePaise: number;
     openingHours?: Prisma.JsonValue;
   }) {
     return {
@@ -79,6 +80,7 @@ export class ShopsService {
       isOpen: shop.isOpen,
       deliveryRadiusKm: shop.deliveryRadiusKm,
       imageUrl: shop.imageUrl,
+      deliveryFeePaise: shop.deliveryFeePaise,
       openingHours: this.parseHours(shop.openingHours),
     };
   }

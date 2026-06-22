@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Product } from '@bloomdidi/shared';
+import type { Product, Shop } from '@bloomdidi/shared';
 import { api } from './api';
 import {
   clearServerCart,
@@ -31,6 +31,7 @@ export function useCheckoutCart() {
 
   const [serverCart, setServerCart] = useState<ServerCart | null>(null);
   const [products, setProducts] = useState<Map<string, Product>>(new Map());
+  const [shopDeliveryFee, setShopDeliveryFee] = useState(DISPLAY_DELIVERY_FEE_PAISE);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -68,6 +69,10 @@ export function useCheckoutCart() {
       .fetch<Product[]>(`/catalog/shops/${shopId}/products`)
       .then((list) => setProducts(new Map(list.map((p) => [p.id, p]))))
       .catch(() => setProducts(new Map()));
+    api
+      .fetch<Shop>(`/shops/${shopId}`)
+      .then((s) => setShopDeliveryFee(s.deliveryFeePaise ?? DISPLAY_DELIVERY_FEE_PAISE))
+      .catch(() => setShopDeliveryFee(DISPLAY_DELIVERY_FEE_PAISE));
   }, [serverCart?.shopId, localShopId]);
 
   const useServer = isLoggedIn() && serverCart !== null && serverCart.items.length > 0;
@@ -101,8 +106,8 @@ export function useCheckoutCart() {
   const shopId = useServer ? serverCart!.shopId : localShopId;
   const shopName = useServer ? serverCart!.shopName : localShopName;
   const itemTotal = lines.reduce((s, l) => s + l.lineTotal, 0);
-  const deliveryFee = useServer ? serverCart!.deliveryFee : DISPLAY_DELIVERY_FEE_PAISE;
-  const toPay = useServer ? serverCart!.total : itemTotal + (lines.length ? deliveryFee : 0);
+  const deliveryFee = useServer ? serverCart!.deliveryFee : shopDeliveryFee;
+  const toPay = useServer ? serverCart!.total : itemTotal + (lines.length ? shopDeliveryFee : 0);
 
   const setQty = useCallback(
     async (productId: string, qty: number) => {

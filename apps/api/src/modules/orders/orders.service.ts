@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { SettingsService } from '../settings/settings.service';
 import { OrderStatus, PaymentMethod, PaymentStatus, Prisma } from '@prisma/client';
 import { ORDER_TRANSITIONS } from '@bloomdidi/shared';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -15,6 +14,31 @@ import { CartService } from '../cart/cart.service';
 import { PlaceOrderDto } from './dto/place-order.dto';
 import { CheckoutDto } from './dto/checkout.dto';
 import { UpdateOrderStatusDto } from './dto/update-status.dto';
+import { ReviewOrderDto } from './dto/review-order.dto';
+
+const TRACK_STEPS = [
+  'confirmed',
+  'accepted',
+  'preparing',
+  'ready',
+  'out_for_delivery',
+  'delivered',
+] as const;
+
+const STATUS_TO_TRACK: Record<string, string> = {
+  PENDING_PAYMENT: 'confirmed',
+  SCHEDULED: 'confirmed',
+  PLACED: 'confirmed',
+  ACCEPTED: 'accepted',
+  PREPARING: 'preparing',
+  READY: 'ready',
+  PICKED_UP: 'out_for_delivery',
+  OUT_FOR_DELIVERY: 'out_for_delivery',
+  DELIVERED: 'delivered',
+  CANCELLED: 'rejected',
+  REFUNDED: 'rejected',
+  PAYMENT_FAILED: 'rejected',
+};
 
 @Injectable()
 export class OrdersService {
@@ -23,7 +47,6 @@ export class OrdersService {
     private inventory: InventoryService,
     private payments: PaymentsService,
     private notifications: NotificationsService,
-    private settings: SettingsService,
     private cart: CartService,
   ) {}
 
@@ -98,8 +121,7 @@ export class OrdersService {
       });
     }
 
-    const platformSettings = await this.settings.get();
-    const deliveryFee = platformSettings.deliveryFeePaise;
+    const deliveryFee = shop.deliveryFeePaise;
     const total = subtotal + deliveryFee;
 
     const isOnline = dto.paymentMethod !== PaymentMethod.COD;
@@ -201,6 +223,146 @@ export class OrdersService {
     }
 
     return this.mapOrder(order);
+  }
+
+  async getOrderTrack(orderId: string, userId: string, role: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        shop: { include: { owner: true } },
+        address: true,
+        payment: true,
+        review: true,
+      },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const isCustomer = order.customerId === userId;
+    const isVendor = order.shop.ownerId === userId;
+    if (!isCustomer && !isVendor && role !== 'ADMIN') {
+      throw new ForbiddenException('Not authorized');
+    }
+
+    const trackStatus = STATUS_TO_TRACK[order.status] ?? 'confirmed';
+    const trackIdx = TRACK_STEPS.indexOf(trackStatus as (typeof TRACK_STEPS)[number]);
+
+    return {
+      id: order.id,
+      code: `BD-${order.id.replace(/-/g, '').slice(0, 4).toUpperCase()}`,
+      vendorName: order.shop.name,
+      vendorPhone: order.shop.owner.phone.replace(/\D/g, ''),
+      status: trackStatus,
+      items: order.items.map((i) => ({
+        id: i.id,
+        name: i.productName,
+        qty: i.qty,
+        price: i.unitPrice,
+      })),
+      deliveryFee: order.deliveryFee,
+      total: order.total,
+      deliveryAddress: [order.address.line1, order.address.line2, order.address.city]
+        .filter(Boolean)
+        .join(', '),
+      timeline: this.buildTrackTimeline(order.createdAt, order.updatedAt, trackIdx, trackStatus),
+      reviewed: !!order.review,
+    };
+  }
+
+  async cancelOrder(orderId: string, customerId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { payment: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.customerId !== customerId) throw new ForbiddenException('Not authorized');
+    if (order.status !== OrderStatus.PLACED && order.status !== OrderStatus.ACCEPTED) {
+      throw new BadRequestException('This order can no longer be cancelled');
+    }
+
+    if (order.payment?.status === PaymentStatus.CAPTURED) {
+      await this.payments.issueRefund(orderId, 'customer_cancelled');
+      const updated = await this.prisma.order.findUnique({
+        where: { id: orderId },
+        include: { items: true, shop: true, address: true },
+      });
+      return this.mapOrder(updated!);
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.CANCELLED },
+      include: { items: true, shop: true, address: true },
+    });
+
+    await this.notifications.notifyCustomerOrderUpdate(customerId, orderId, OrderStatus.CANCELLED);
+    return this.mapOrder(updated);
+  }
+
+  async reviewOrder(orderId: string, customerId: string, dto: ReviewOrderDto) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { review: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.customerId !== customerId) throw new ForbiddenException('Not authorized');
+    if (order.status !== OrderStatus.DELIVERED) {
+      throw new BadRequestException('You can only review delivered orders');
+    }
+    if (order.review) throw new BadRequestException('Already reviewed');
+
+    await this.prisma.review.create({
+      data: {
+        orderId,
+        shopId: order.shopId,
+        userId: customerId,
+        rating: dto.rating,
+        comment: dto.comment?.trim() || null,
+      },
+    });
+
+    const agg = await this.prisma.review.aggregate({
+      where: { shopId: order.shopId },
+      _avg: { rating: true },
+      _count: true,
+    });
+
+    await this.prisma.shop.update({
+      where: { id: order.shopId },
+      data: {
+        rating: agg._avg.rating ?? dto.rating,
+        reviewCount: agg._count,
+      },
+    });
+
+    return { ok: true };
+  }
+
+  private buildTrackTimeline(
+    createdAt: Date,
+    updatedAt: Date,
+    trackIdx: number,
+    trackStatus: string,
+  ): Record<string, string> {
+    if (trackStatus === 'rejected') return {};
+
+    const fmt = (d: Date) =>
+      d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+    const timeline: Record<string, string> = {};
+    for (let i = 0; i < TRACK_STEPS.length; i++) {
+      if (i > trackIdx) break;
+      if (i === 0) {
+        timeline[TRACK_STEPS[i]] = fmt(createdAt);
+      } else if (i < trackIdx) {
+        timeline[TRACK_STEPS[i]] = fmt(
+          new Date(createdAt.getTime() + i * 3 * 60 * 1000),
+        );
+      } else if (i === trackIdx) {
+        timeline[TRACK_STEPS[i]] = fmt(updatedAt);
+      }
+    }
+    return timeline;
   }
 
   async updateStatus(orderId: string, ownerId: string, dto: UpdateOrderStatusDto) {

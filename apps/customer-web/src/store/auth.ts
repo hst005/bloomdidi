@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { api } from '../lib/api';
+import { authClient, clearAuthToken, setAuthToken } from '../lib/auth-client';
 
 interface AuthState {
   isAuthenticated: boolean;
   phone: string | null;
   name: string | null;
   login: (phone: string, otp: string, name?: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   hydrate: () => void;
 }
 
@@ -24,28 +25,46 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   login: async (phone, otp, name = 'Customer') => {
-    await api.fetch('/auth/otp/send', { method: 'POST', body: JSON.stringify({ phone }) });
-    const res = await api.fetch<{
-      accessToken: string;
-      user: { phone: string; name: string | null };
-    }>('/auth/otp/verify', {
-      method: 'POST',
-      body: JSON.stringify({ phone, otp, name, role: 'CUSTOMER' }),
+    const { data, error } = await authClient.phoneNumber.verify({
+      phoneNumber: phone,
+      code: otp,
     });
-    api.setToken(res.accessToken);
-    localStorage.setItem('bloomdidi_phone', res.user.phone);
-    if (res.user.name) localStorage.setItem('bloomdidi_name', res.user.name);
+    if (error) throw new Error(error.message ?? 'Invalid OTP');
+
+    const token = localStorage.getItem('bloomdidi_token');
+    if (token) api.setToken(token);
+
+    if (name && data?.user?.id) {
+      await authClient.updateUser({ name }).catch(() => undefined);
+    }
+
+    localStorage.setItem('bloomdidi_phone', phone);
+    localStorage.setItem('bloomdidi_name', name);
     set({
       isAuthenticated: true,
-      phone: res.user.phone,
-      name: res.user.name,
+      phone,
+      name,
     });
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      await authClient.signOut();
+    } catch {
+      // ignore — token may already be invalid
+    }
+    clearAuthToken();
     api.setToken(null);
     localStorage.removeItem('bloomdidi_phone');
     localStorage.removeItem('bloomdidi_name');
     set({ isAuthenticated: false, phone: null, name: null });
   },
 }));
+
+/** Sync bearer token into the legacy api client after page load. */
+export function syncApiTokenFromStorage() {
+  const token = localStorage.getItem('bloomdidi_token');
+  api.setToken(token);
+}
+
+export { setAuthToken };

@@ -41,7 +41,7 @@ export function MenuProductCard({
         animationDelay: `${index * 40}ms`,
       }}
     >
-      <div style={{ aspectRatio: '1/1', overflow: 'hidden' }}>
+      <div style={{ aspectRatio: '16/6', maxHeight: 140, overflow: 'hidden' }}>
         <FlowerImage
           name={product.name}
           imageUrl={product.imageUrl}

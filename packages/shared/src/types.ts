@@ -33,6 +33,7 @@ export interface Shop {
   deliveryRadiusKm: number;
   imageUrl: string | null;
   openingHours?: ShopOpeningHours | null;
+  deliveryFeePaise?: number;
   distanceKm?: number;
 }
 

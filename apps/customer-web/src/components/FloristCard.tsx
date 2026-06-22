@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { formatPrice } from '../lib/api';
 import { formatDistance } from '../lib/format';
 import { FlowerImage } from './FlowerImage';
+import { useMotionPrefs } from '../store/cart';
 
 export interface Florist {
   id: string;
@@ -16,21 +17,27 @@ export interface Florist {
   deliveryEtaMin: number;
   deliveryEtaMax: number;
   minPricePaise: number | null;
+  badge?: string | null;
 }
 
 export function FloristCard({ florist, index = 0 }: { florist: Florist; index?: number }) {
-  const categories = florist.categories ?? 'Bouquets · Gifting';
+  const reduced = useMotionPrefs((s) => s.reducedMotion);
+  const categories = (florist.categories ?? 'Bouquets · Gifting').replace(/ • /g, ' · ');
+  const distanceLabel = formatDistance(florist.distanceKm);
+  const etaLabel = `${florist.deliveryEtaMin}–${florist.deliveryEtaMax} min`;
+  const fromPrice =
+    florist.minPricePaise != null ? formatPrice(florist.minPricePaise) : null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={reduced ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: index * 0.05, duration: 0.35 }}
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <Link
         to={`/shop/${florist.id}`}
-        className="bd-card bd-rise bd-card-static"
+        className="bd-card bd-rise bd-card-static florist-card"
         style={{
           display: 'block',
           overflow: 'hidden',
@@ -40,41 +47,37 @@ export function FloristCard({ florist, index = 0 }: { florist: Florist; index?: 
           cursor: 'pointer',
         }}
       >
-        <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
+        <div className="florist-card-media">
           <FlowerImage
             name={florist.name}
             imageUrl={florist.imageUrl}
             className="w-full h-full"
             imgClassName="w-full h-full object-cover"
           />
+          {florist.badge && (
+            <span className="florist-card-badge">{florist.badge}</span>
+          )}
         </div>
-        <div style={{ padding: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-            <span style={{ fontWeight: 500, color: 'var(--bd-ink)' }}>{florist.name}</span>
-            <span style={{ color: 'var(--bd-green)', fontSize: 13, whiteSpace: 'nowrap' }}>
-              ★ {florist.rating.toFixed(1)}
-            </span>
+
+        <div className="florist-card-body">
+          <div className="florist-card-title-row">
+            <span className="florist-card-name">{florist.name}</span>
+            <span className="florist-card-rating">★ {florist.rating.toFixed(1)}</span>
           </div>
-          <div style={{ fontSize: 13, color: 'var(--bd-ink-soft)', marginTop: 3 }}>
-            {categories.replace(/ • /g, ' · ')}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              marginTop: 10,
-              fontSize: 12,
-              color: 'var(--bd-ink-soft)',
-            }}
-          >
-            <span>{formatDistance(florist.distanceKm)}</span>
-            <span>
-              {florist.deliveryEtaMin}–{florist.deliveryEtaMax} min
+          <div className="florist-card-categories">{categories}</div>
+          <div className="florist-card-meta">
+            <span>{distanceLabel}</span>
+            <span className="florist-card-meta-dot" aria-hidden>
+              ·
             </span>
-            {florist.minPricePaise != null && (
-              <span style={{ marginLeft: 'auto', color: 'var(--bd-ink)' }}>
-                From {formatPrice(florist.minPricePaise)}
-              </span>
+            <span>{etaLabel}</span>
+            {fromPrice && (
+              <>
+                <span className="florist-card-meta-dot" aria-hidden>
+                  ·
+                </span>
+                <span>From {fromPrice}</span>
+              </>
             )}
           </div>
         </div>

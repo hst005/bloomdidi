@@ -19,6 +19,7 @@ export type VendorStore = {
   imageUrl: string | null;
   isOpen: boolean;
   serviceRadiusKm: number;
+  deliveryFeePaise: number;
   hours: Record<string, DayHours>;
   bank: StoreBank | null;
   rating: number;
@@ -112,6 +113,7 @@ export function StoreProfilePanel({ shopId }: StoreProfilePanelProps) {
       <StoreDetailsSection shopId={shopId} store={store} onChange={patch} onError={setError} />
       <HoursSection shopId={shopId} store={store} onChange={patch} onError={setError} />
       <RadiusSection shopId={shopId} store={store} onChange={patch} onError={setError} />
+      <DeliveryFeeSection shopId={shopId} store={store} onChange={patch} onError={setError} />
       <BankSection shopId={shopId} store={store} onChange={patch} onError={setError} />
       <ReviewsSection store={store} />
     </div>
@@ -475,6 +477,61 @@ function RadiusSection({
         ≈ {reachHint.toLocaleString('en-IN')} households in range
       </div>
       <SaveRow dirty={dirty} onSave={save} saveLabel="Save radius" />
+    </Section>
+  );
+}
+
+function DeliveryFeeSection({
+  shopId,
+  store,
+  onChange,
+  onError,
+}: {
+  shopId: string;
+  store: VendorStore;
+  onChange: (c: Partial<VendorStore>) => void;
+  onError: (msg: string) => void;
+}) {
+  const [feeRupees, setFeeRupees] = useState(store.deliveryFeePaise / 100);
+  const dirty = Math.round(feeRupees * 100) !== store.deliveryFeePaise;
+
+  useEffect(() => {
+    setFeeRupees(store.deliveryFeePaise / 100);
+  }, [store.deliveryFeePaise]);
+
+  const save = async () => {
+    onError('');
+    const deliveryFeePaise = Math.round(feeRupees * 100);
+    const updated = await api.fetch<VendorStore>(`/vendor/store/delivery-fee${qs(shopId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ deliveryFeePaise }),
+    });
+    onChange({ deliveryFeePaise: updated.deliveryFeePaise });
+  };
+
+  return (
+    <Section title="Delivery fee">
+      <div style={{ fontSize: 13, color: 'var(--bd-ink-soft)', marginBottom: 12 }}>
+        What customers pay for delivery from your shop. Shown at checkout before they pay.
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 15, color: 'var(--bd-ink-soft)' }}>₹</span>
+        <input
+          type="number"
+          className="bd-input"
+          min={0}
+          max={500}
+          step={1}
+          value={feeRupees}
+          onChange={(e) => setFeeRupees(Math.max(0, +e.target.value))}
+          style={{ maxWidth: 120 }}
+        />
+        <span style={{ fontSize: 13, color: 'var(--bd-ink-soft)' }}>per order</span>
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--bd-ink-soft)', marginTop: 8 }}>
+        Set to ₹0 for free delivery. Maximum ₹500.
+      </div>
+      <SaveRow dirty={dirty} onSave={save} saveLabel="Save delivery fee" />
     </Section>
   );
 }

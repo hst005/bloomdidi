@@ -6,6 +6,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { PlaceOrderDto } from './dto/place-order.dto';
 import { CheckoutDto } from './dto/checkout.dto';
 import { UpdateOrderStatusDto } from './dto/update-status.dto';
+import { ReviewOrderDto } from './dto/review-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -35,9 +36,31 @@ export class OrdersController {
     return this.ordersService.getShopOrders(shopId, user.sub);
   }
 
+  @Get(':id/track')
+  @Roles(UserRole.CUSTOMER, UserRole.VENDOR, UserRole.ADMIN)
+  trackOrder(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    return this.ordersService.getOrderTrack(id, user.sub, user.role);
+  }
+
   @Get(':id')
   getOrder(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     return this.ordersService.getOrder(id, user.sub, user.role);
+  }
+
+  @Post(':id/cancel')
+  @Roles(UserRole.CUSTOMER, UserRole.ADMIN)
+  cancelOrder(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    return this.ordersService.cancelOrder(id, user.sub);
+  }
+
+  @Post(':id/review')
+  @Roles(UserRole.CUSTOMER, UserRole.ADMIN)
+  reviewOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: ReviewOrderDto,
+  ) {
+    return this.ordersService.reviewOrder(id, user.sub, dto);
   }
 
   @Patch(':id/status')

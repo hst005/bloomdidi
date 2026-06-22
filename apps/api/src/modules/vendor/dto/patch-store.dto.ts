@@ -24,6 +24,13 @@ export class PatchStoreRadiusDto {
   serviceRadiusKm!: number;
 }
 
+export class PatchStoreDeliveryFeeDto {
+  @IsNumber()
+  @Min(0)
+  @Max(50000)
+  deliveryFeePaise!: number;
+}
+
 export class PatchStoreBankDto {
   @IsString()
   @MinLength(2)

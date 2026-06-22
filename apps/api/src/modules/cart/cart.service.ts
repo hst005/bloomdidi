@@ -6,15 +6,11 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { SettingsService } from '../settings/settings.service';
 import { AddCartItemDto, UpdateCartItemDto } from './dto/cart.dto';
 
 @Injectable()
 export class CartService {
-  constructor(
-    private prisma: PrismaService,
-    private settings: SettingsService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async getCart(userId: string) {
     const cart = await this.prisma.cart.findUnique({
@@ -28,7 +24,7 @@ export class CartService {
       return { shopId: null, shopName: null, items: [], subtotal: 0, deliveryFee: 0, total: 0 };
     }
 
-    const { deliveryFeePaise } = await this.settings.get();
+    const deliveryFee = cart.shop.deliveryFeePaise;
     let subtotal = 0;
     const items = cart.items.map((item) => {
       const customizations = item.customizations as { priceDelta: number }[];
@@ -53,8 +49,8 @@ export class CartService {
       shopName: cart.shop.name,
       items,
       subtotal,
-      deliveryFee: deliveryFeePaise,
-      total: subtotal + deliveryFeePaise,
+      deliveryFee,
+      total: subtotal + deliveryFee,
     };
   }
 

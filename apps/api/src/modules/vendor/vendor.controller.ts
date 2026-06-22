@@ -4,7 +4,7 @@ import { VendorService } from './vendor.service';
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UpdateVendorShopDto } from './dto/update-shop.dto';
-import { PatchStoreDto, PatchStoreRadiusDto, PatchStoreStatusDto } from './dto/patch-store.dto';
+import { PatchStoreDto, PatchStoreDeliveryFeeDto, PatchStoreRadiusDto, PatchStoreStatusDto } from './dto/patch-store.dto';
 
 @Controller('vendor')
 @Roles(UserRole.VENDOR, UserRole.ADMIN)
@@ -68,6 +68,15 @@ export class VendorController {
     @Body() dto: PatchStoreRadiusDto,
   ) {
     return this.vendorService.patchStoreRadius(shopId, user.sub, dto.serviceRadiusKm);
+  }
+
+  @Patch('store/delivery-fee')
+  patchStoreDeliveryFee(
+    @CurrentUser() user: JwtPayload,
+    @Query('shopId') shopId: string,
+    @Body() dto: PatchStoreDeliveryFeeDto,
+  ) {
+    return this.vendorService.patchStoreDeliveryFee(shopId, user.sub, dto.deliveryFeePaise);
   }
 
   @Patch('store')
