@@ -1,0 +1,337 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  VENDOR
+  RIDER
+  ADMIN
+}
+
+enum VendorStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  SETTLED
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_FAILED
+  SCHEDULED
+  PLACED
+  ACCEPTED
+  PREPARING
+  READY
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  WALLET
+  COD
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  phone        String    @unique
+  email        String?   @unique
+  passwordHash String?   @map("password_hash")
+  name         String?
+  role         UserRole  @default(CUSTOMER)
+  refreshToken String?   @map("refresh_token")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  shops     Shop[]
+  orders    Order[]
+  addresses Address[]
+  reviews   Review[]
+  deliveries Delivery[] @relation("RiderDeliveries")
+  cart      Cart?
+
+  @@map("users")
+}
+
+model Shop {
+  id               String       @id @default(uuid())
+  ownerId          String       @map("owner_id")
+  name             String
+  description      String?
+  lat              Float
+  lng              Float
+  rating           Float        @default(0)
+  reviewCount      Int          @default(0) @map("review_count")
+  isOpen           Boolean      @default(true) @map("is_open")
+  status           VendorStatus @default(PENDING)
+  deliveryRadiusKm Float        @default(5) @map("delivery_radius_km")
+  imageUrl         String?      @map("image_url")
+  leadTimeHours    Int          @default(2) @map("lead_time_hours")
+  openUntil        String?      @map("open_until")
+  categories       String?      @default("Bouquets • Roses • Gifting")
+  minPricePaise    Int?         @map("min_price_paise")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  owner    User      @relation(fields: [ownerId], references: [id])
+  products Product[]
+  orders   Order[]
+  reviews  Review[]
+  payouts  Payout[]
+  carts    Cart[]
+
+  @@index([lat, lng])
+  @@index([status])
+  @@map("shops")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  shopId      String   @map("shop_id")
+  name        String
+  description String?
+  basePrice   Int      @map("base_price")
+  category    String
+  stockQty    Int      @default(0) @map("stock_qty")
+  isAvailable Boolean  @default(true) @map("is_available")
+  imageUrl    String?  @map("image_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  shop           Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customizations Customization[]
+  orderItems     OrderItem[]
+  cartItems      CartItem[]
+
+  @@index([shopId])
+  @@map("products")
+}
+
+model Customization {
+  id         String @id @default(uuid())
+  productId  String @map("product_id")
+  type       String
+  name       String
+  priceDelta Int    @map("price_delta")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("customizations")
+}
+
+model Address {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  label         String?
+  recipientName String   @map("recipient_name")
+  phone         String
+  line1         String
+  line2         String?
+  city          String
+  state         String
+  pincode       String
+  lat           Float?
+  lng           Float?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@map("addresses")
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  customerId   String      @map("customer_id")
+  shopId       String      @map("shop_id")
+  addressId    String      @map("address_id")
+  status       OrderStatus @default(PLACED)
+  scheduledFor DateTime?   @map("scheduled_for")
+  subtotal     Int
+  deliveryFee  Int         @map("delivery_fee")
+  total        Int
+  cardMessage  String?     @map("card_message")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  customer  User       @relation(fields: [customerId], references: [id])
+  shop      Shop       @relation(fields: [shopId], references: [id])
+  address   Address    @relation(fields: [addressId], references: [id])
+  items     OrderItem[]
+  payment   Payment?
+  delivery  Delivery?
+  review    Review?
+
+  @@index([customerId])
+  @@index([shopId, status])
+  @@index([scheduledFor, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String @id @default(uuid())
+  orderId        String @map("order_id")
+  productId      String @map("product_id")
+  productName    String @map("product_name")
+  qty            Int
+  unitPrice      Int    @map("unit_price") // price_at_order snapshot at checkout
+  customizations Json   @default("[]")
+  lineTotal      Int    @map("line_total")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model PlatformSettings {
+  id                      String   @id @default("default")
+  globalDiscoveryRadiusKm Float    @default(6) @map("global_discovery_radius_km")
+  commissionPct           Float    @default(0) @map("commission_pct")
+  deliveryFeePaise        Int      @default(4000) @map("delivery_fee_paise")
+  minOrderValuePaise      Int      @default(0) @map("min_order_value_paise")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
+}
+
+model Payout {
+  id            String       @id @default(uuid())
+  shopId        String       @map("shop_id")
+  grossAmount   Int          @map("gross_amount")
+  commission    Int          @default(0)
+  adjustments   Int          @default(0)
+  netAmount     Int          @map("net_amount")
+  status        PayoutStatus @default(PENDING)
+  periodStart   DateTime     @map("period_start")
+  periodEnd     DateTime     @map("period_end")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@index([shopId])
+  @@map("payouts")
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique @map("user_id")
+  shopId    String     @map("shop_id")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  items     CartItem[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@map("carts")
+}
+
+model CartItem {
+  id             String @id @default(uuid())
+  cartId         String @map("cart_id")
+  productId      String @map("product_id")
+  qty            Int    @default(1)
+  customizations Json   @default("[]")
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  orderId         String        @unique @map("order_id")
+  amount          Int
+  status          PaymentStatus @default(PENDING)
+  method          PaymentMethod
+  razorpayOrderId String?       @map("razorpay_order_id")
+  razorpayPaymentId String?     @map("razorpay_payment_id")
+  payoutStatus    String?       @map("payout_status")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Delivery {
+  id        String         @id @default(uuid())
+  orderId   String         @unique @map("order_id")
+  riderId   String?        @map("rider_id")
+  status    DeliveryStatus @default(PENDING)
+  lat       Float?
+  lng       Float?
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  rider User? @relation("RiderDeliveries", fields: [riderId], references: [id])
+
+  @@map("deliveries")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  orderId   String   @unique @map("order_id")
+  shopId    String   @map("shop_id")
+  userId    String   @map("user_id")
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shop  Shop  @relation(fields: [shopId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
+}
+
+model OtpChallenge {
+  id        String   @id @default(uuid())
+  phone     String
+  otpHash   String   @map("otp_hash")
+  expiresAt DateTime @map("expires_at")
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([phone])
+  @@map("otp_challenges")
+}

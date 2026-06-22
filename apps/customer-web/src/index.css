@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --color-brand-50: #fdf4f5;
+  --color-brand-100: #fce8ea;
+  --color-brand-200: #f9d0d6;
+  --color-brand-300: #f4a9b4;
+  --color-brand-400: #ec7589;
+  --color-brand-500: #df4a64;
+  --color-brand-600: #c9304f;
+  --color-brand-700: #a8243f;
+  --color-brand-800: #8c2139;
+  --color-brand-900: #772035;
+  --color-sage-500: #6b8f71;
+  --color-cream: #faf7f2;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  @apply bg-cream text-brand-900 font-sans antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.card-perspective {
+  perspective: 1200px;
+}
+
+.card-flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-flip-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  backface-visibility: hidden;
+}
+
+.card-face-back {
+  transform: rotateY(180deg);
+}

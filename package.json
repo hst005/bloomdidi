@@ -1,0 +1,28 @@
+{
+  "name": "bloomdidi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BloomDidi — marketplace for local florists",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run build -w @bloomdidi/shared && npm run dev -w @bloomdidi/api",
+    "dev:customer": "npm run build -w @bloomdidi/shared && npm run dev -w @bloomdidi/customer-web",
+    "dev:vendor": "npm run build -w @bloomdidi/shared && npm run dev -w @bloomdidi/vendor-dashboard",
+    "dev:admin": "npm run dev -w @bloomdidi/admin-dashboard",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:generate": "npm run prisma:generate -w @bloomdidi/api",
+    "db:migrate": "npm run prisma:migrate -w @bloomdidi/api",
+    "db:seed": "npm run prisma:seed -w @bloomdidi/api",
+    "setup:local": "bash scripts/setup-local.sh",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
