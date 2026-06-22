@@ -22,4 +22,4 @@ COPY --from=builder /app/apps/api/prisma apps/api/prisma
 RUN npm ci --workspace=@bloomdidi/api --include-workspace-root --omit=dev
 WORKDIR /app/apps/api
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma@6.19.3 migrate deploy && node dist/main.js"]
