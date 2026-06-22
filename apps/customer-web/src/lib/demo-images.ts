@@ -1,19 +1,37 @@
-/** Local demo images — served from customer-web/public/demo (always load, no CDN) */
+import lilyCo from '../assets/demo/shops/lily-co.jpg';
+import petalHub from '../assets/demo/shops/petal-hub.jpg';
+import redRoses from '../assets/demo/products/red-roses.jpg';
+import mixedBouquet from '../assets/demo/products/mixed-bouquet.jpg';
+import lilies from '../assets/demo/products/lilies.jpg';
+import wedding from '../assets/demo/products/wedding.jpg';
+import orchid from '../assets/demo/products/orchid.jpg';
+import pastel from '../assets/demo/products/pastel.jpg';
+import defaultProduct from '../assets/demo/products/default.jpg';
+
+/** Vite-bundled demo images — always resolve, no reliance on /public at runtime */
+const ASSET_MAP: Record<string, string> = {
+  '/demo/shops/lily-co.jpg': lilyCo,
+  '/demo/shops/petal-hub.jpg': petalHub,
+  '/demo/products/red-roses.jpg': redRoses,
+  '/demo/products/mixed-bouquet.jpg': mixedBouquet,
+  '/demo/products/lilies.jpg': lilies,
+  '/demo/products/wedding.jpg': wedding,
+  '/demo/products/orchid.jpg': orchid,
+  '/demo/products/pastel.jpg': pastel,
+  '/demo/products/default.jpg': defaultProduct,
+};
+
 export const DEMO_IMAGES = {
-  shops: {
-    lilyCo: '/demo/shops/lily-co.jpg',
-    petalHub: '/demo/shops/petal-hub.jpg',
-  },
-  products: {
-    redRoses: '/demo/products/red-roses.jpg',
-    mixed: '/demo/products/mixed-bouquet.jpg',
-    lilies: '/demo/products/lilies.jpg',
-    wedding: '/demo/products/wedding.jpg',
-    orchid: '/demo/products/orchid.jpg',
-    pastel: '/demo/products/pastel.jpg',
-    default: '/demo/products/default.jpg',
-  },
+  shops: { lilyCo, petalHub },
+  products: { redRoses, mixedBouquet, lilies, wedding, orchid, pastel, default: defaultProduct },
 } as const;
 
-export const DEMO_SHOP_IMAGE = DEMO_IMAGES.shops.lilyCo;
-export const DEMO_PRODUCT_IMAGE = DEMO_IMAGES.products.default;
+export const DEMO_SHOP_IMAGE = lilyCo;
+export const DEMO_PRODUCT_IMAGE = defaultProduct;
+
+/** Map API `/demo/...` paths (or null) to bundled asset URLs */
+export function resolveImageUrl(path: string | null | undefined, fallback = DEMO_PRODUCT_IMAGE): string {
+  if (!path) return fallback;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return ASSET_MAP[path] ?? fallback;
+}

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../lib/api';
-import { DEMO_SHOP_IMAGE } from '../lib/demo-images';
+import { DEMO_SHOP_IMAGE, resolveImageUrl } from '../lib/demo-images';
 
 export interface Florist {
   id: string;
@@ -19,7 +19,11 @@ export interface Florist {
 }
 
 export function FloristCard({ florist, index = 0 }: { florist: Florist; index?: number }) {
-  const [imgSrc, setImgSrc] = useState(florist.imageUrl || DEMO_SHOP_IMAGE);
+  const [imgSrc, setImgSrc] = useState(() => resolveImageUrl(florist.imageUrl, DEMO_SHOP_IMAGE));
+
+  useEffect(() => {
+    setImgSrc(resolveImageUrl(florist.imageUrl, DEMO_SHOP_IMAGE));
+  }, [florist.imageUrl]);
 
   return (
     <motion.div

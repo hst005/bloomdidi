@@ -10,10 +10,14 @@ export default defineConfig({
       '@bloomdidi/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
     },
   },
-  server: {
+    server: {
     port: 5173,
     proxy: {
       '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/demo': {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },

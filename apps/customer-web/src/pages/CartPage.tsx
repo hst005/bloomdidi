@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api, formatPrice } from '../lib/api';
+import { resolveImageUrl } from '../lib/demo-images';
 import { useCartStore, useMotionPrefs } from '../store/cart';
 import type { Product } from '@bloomdidi/shared';
 import {
@@ -142,7 +143,11 @@ export function CartPage() {
             className="flex gap-4 p-4 bg-white rounded-2xl border border-brand-100"
           >
             {item.imageUrl && (
-              <img src={item.imageUrl} alt="" className="w-20 h-20 rounded-xl object-cover" />
+              <img
+                src={resolveImageUrl(item.imageUrl)}
+                alt=""
+                className="w-20 h-20 rounded-xl object-cover"
+              />
             )}
             <div className="flex-1">
               <p className="font-medium text-brand-800">

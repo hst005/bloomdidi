@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { api } from '../lib/api';
-import { DEMO_SHOP_IMAGE } from '../lib/demo-images';
+import { DEMO_SHOP_IMAGE, resolveImageUrl } from '../lib/demo-images';
 import { BouquetCard } from '../components/BouquetCard';
 import { useMotionPrefs } from '../store/cart';
 import type { Product, Shop } from '@bloomdidi/shared';
@@ -43,7 +43,7 @@ export function ShopPage() {
       <div ref={headerRef} className="relative h-56 md:h-72 overflow-hidden">
         <motion.div style={{ y: parallaxY, scale: parallaxScale }} className="absolute inset-0">
           <img
-            src={shop.imageUrl ?? DEMO_SHOP_IMAGE}
+            src={resolveImageUrl(shop.imageUrl, DEMO_SHOP_IMAGE)}
             alt={shop.name}
             onError={(e) => {
               (e.target as HTMLImageElement).src = DEMO_SHOP_IMAGE;

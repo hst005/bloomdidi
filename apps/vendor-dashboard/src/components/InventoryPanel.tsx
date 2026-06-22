@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Product } from '@bloomdidi/shared';
 import { api, formatPrice } from '../lib/api';
+import { resolveImageUrl } from '../lib/demo-images';
 
 interface InventoryPanelProps {
   products: Product[];
@@ -42,7 +43,11 @@ export function InventoryPanel({ products, onRefresh }: InventoryPanelProps) {
           className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200"
         >
           {product.imageUrl && (
-            <img src={product.imageUrl} alt="" className="w-14 h-14 rounded-lg object-cover" />
+            <img
+              src={resolveImageUrl(product.imageUrl) ?? undefined}
+              alt=""
+              className="w-14 h-14 rounded-lg object-cover"
+            />
           )}
           <div className="flex-1 min-w-0">
             <p className="font-medium text-brand-900 truncate">{product.name}</p>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Shop } from '@bloomdidi/shared';
-import { DEMO_SHOP_IMAGE } from '../lib/demo-images';
+import { DEMO_SHOP_IMAGE, resolveImageUrl } from '../lib/demo-images';
 import { useMotionPrefs } from '../store/cart';
 
 interface ShopCardProps {
@@ -24,7 +24,7 @@ export function ShopCard({ shop, index = 0 }: ShopCardProps) {
       >
         <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
           <img
-            src={shop.imageUrl ?? DEMO_SHOP_IMAGE}
+            src={resolveImageUrl(shop.imageUrl, DEMO_SHOP_IMAGE)}
             alt={shop.name}
             onError={(e) => {
               (e.target as HTMLImageElement).src = DEMO_SHOP_IMAGE;

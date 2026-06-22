@@ -1,12 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { existsSync } from 'fs';
+import express from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
   const config = app.get(ConfigService);
+
+  // Serve bundled demo florist photos at /demo/* (vendor dashboard + fallback)
+  const demoDir = join(process.cwd(), 'assets', 'demo');
+  if (existsSync(demoDir)) {
+    app.use('/demo', express.static(demoDir));
+  }
 
   app.use(helmet());
   app.enableCors({
