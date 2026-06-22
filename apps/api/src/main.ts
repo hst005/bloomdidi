@@ -37,9 +37,12 @@ async function bootstrap() {
     }),
   );
 
-  const port = config.get<number>('PORT') ?? 3000;
-  await app.listen(port);
-  console.log(`BloomDidi API running on http://localhost:${port}/${prefix}`);
+  const port = Number(process.env.PORT ?? config.get<number>('PORT') ?? 3000);
+  await app.listen(port, '0.0.0.0');
+  console.log(`BloomDidi API running on 0.0.0.0:${port}/${prefix}`);
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Failed to start BloomDidi API:', err);
+  process.exit(1);
+});

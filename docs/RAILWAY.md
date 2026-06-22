@@ -10,7 +10,7 @@ Each service uses the **repo root** as root directory and its own **Dockerfile**
 | Dockerfile path | `apps/api/Dockerfile` |
 | Custom build command | *(empty)* |
 | Custom start command | *(empty)* |
-| Public port | `3000` |
+| Public port | Match Railway **Variables → PORT** (do not hardcode; remove manual `PORT=3000` if set) |
 
 Required variables: see `docs/BETTER_AUTH.md` and `apps/api/.env.example`.
 
