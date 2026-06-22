@@ -96,6 +96,8 @@ async function main() {
     where: { id: '00000000-0000-4000-8000-000000000001' },
     update: {
       ownerId: vendor1.id,
+      name: 'Lily & Co Florals',
+      description: 'Premium roses & occasion bouquets. Same-day delivery across South Delhi.',
       status: VendorStatus.ACTIVE,
       minPricePaise: 29900,
       categories: 'Bouquets • Roses • Gifting',
@@ -125,6 +127,8 @@ async function main() {
     where: { id: '00000000-0000-4000-8000-000000000002' },
     update: {
       ownerId: vendor2.id,
+      name: 'Petal Hub',
+      description: 'Artisan arrangements for weddings, celebrations, and everyday joy.',
       status: VendorStatus.ACTIVE,
       minPricePaise: 34900,
       categories: 'Mixed • Seasonal • Weddings',

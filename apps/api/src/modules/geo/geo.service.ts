@@ -66,6 +66,12 @@ export class GeoService {
       results = await this.discoverHaversine(lat, lng, globalDiscoveryRadiusKm);
     }
 
+    // Dev safety net — show seeded demo florists even if coords/radius mismatch
+    if (results.length === 0 && process.env.NODE_ENV !== 'production') {
+      this.logger.warn('Discovery returned 0 florists — using dev fallback (all active shops)');
+      results = await this.discoverHaversine(lat, lng, 999);
+    }
+
     results = results.filter((r) => {
       if (q && !r.name.toLowerCase().includes(q.toLowerCase()) &&
           !(r.description?.toLowerCase().includes(q.toLowerCase()))) return false;

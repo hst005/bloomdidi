@@ -33,13 +33,16 @@ cd ~/Library/Mobile\ Documents/com~apple~CloudDocs/Cursor/bloomdidi
 npm run setup:local
 ```
 
-Then start the apps (3 separate terminals):
+Then start the apps (**API must be running before the customer app**):
 
 ```bash
-npm run dev:api        # http://localhost:3000
+npm run dev:api        # http://localhost:3000  ← start this first
 npm run dev:customer   # http://localhost:5173
 npm run dev:vendor     # http://localhost:5174
+npm run dev:admin      # http://localhost:5175
 ```
+
+If the customer feed shows no florists, run `npm run db:seed` and ensure the API terminal is up.
 
 Don't have Postgres yet?
 

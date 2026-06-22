@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '../lib/api';
@@ -18,28 +18,40 @@ export function HomePage() {
   );
   const [florists, setFlorists] = useState<Florist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [sort, setSort] = useState<Sort>('nearest');
   const [search, setSearch] = useState('');
   const reduced = useMotionPrefs((s) => s.reducedMotion);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const q = search ? `&q=${encodeURIComponent(search)}` : '';
-        const list = await api.fetch<Florist[]>(
-          `/florists?lat=${DEFAULT_LAT}&lng=${DEFAULT_LNG}&sort=${sort}${q}`,
+  const loadFlorists = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const q = search ? `&q=${encodeURIComponent(search)}` : '';
+      const maxPrice = sort === 'price' ? '&maxPrice=50000' : '';
+      const list = await api.fetch<Florist[]>(
+        `/florists?lat=${DEFAULT_LAT}&lng=${DEFAULT_LNG}&sort=${sort}${q}${maxPrice}`,
+      );
+      setFlorists(list);
+    } catch (e) {
+      setFlorists([]);
+      const msg = e instanceof Error ? e.message : 'Request failed';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('ECONNREFUSED')) {
+        setError(
+          'Cannot reach the API. Start it first: npm run dev:api — then run npm run db:seed if this is a fresh setup.',
         );
-        setFlorists(list);
-      } catch {
-        setFlorists([]);
-      } finally {
-        setLoading(false);
+      } else {
+        setError(msg);
       }
+    } finally {
+      setLoading(false);
     }
-    const t = setTimeout(load, search ? 300 : 0);
-    return () => clearTimeout(t);
   }, [sort, search]);
+
+  useEffect(() => {
+    const t = setTimeout(loadFlorists, search ? 300 : 0);
+    return () => clearTimeout(t);
+  }, [loadFlorists, search]);
 
   const filters: { id: Sort; label: string }[] = [
     { id: 'nearest', label: 'Nearest' },
@@ -61,7 +73,6 @@ export function HomePage() {
         </div>
       )}
 
-      {/* Location bar */}
       <div className="sticky top-16 z-30 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3">
         <button className="flex items-center gap-2 text-left w-full">
           <span className="text-blue-400">📍</span>
@@ -98,11 +109,32 @@ export function HomePage() {
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
         {loading ? (
-          [1, 2, 3].map((i) => <div key={i} className="h-56 rounded-2xl bg-slate-900 animate-pulse" />)
+          [1, 2].map((i) => <div key={i} className="h-56 rounded-2xl bg-slate-900 animate-pulse" />)
+        ) : error ? (
+          <div className="text-center py-12 px-4">
+            <p className="text-amber-400 text-sm">{error}</p>
+            <button
+              onClick={loadFlorists}
+              className="mt-4 px-4 py-2 bg-blue-600 rounded-lg text-sm font-medium"
+            >
+              Retry
+            </button>
+          </div>
         ) : florists.length === 0 ? (
-          <p className="text-slate-500 text-center py-12">
-            No florists deliver to your area. Try a different location or ask admin to increase discovery radius.
-          </p>
+          <div className="text-center py-12 px-4">
+            <p className="text-slate-500 text-sm">
+              No florists deliver to your area. Try a different location or ask admin to increase discovery radius.
+            </p>
+            <p className="text-slate-600 text-xs mt-3">
+              First time setup? Run <code className="text-slate-400">npm run db:seed</code> to load demo florists.
+            </p>
+            <button
+              onClick={loadFlorists}
+              className="mt-4 px-4 py-2 border border-slate-700 rounded-lg text-sm text-slate-300"
+            >
+              Refresh
+            </button>
+          </div>
         ) : (
           florists.map((f, i) => <FloristCard key={f.id} florist={f} index={i} />)
         )}
