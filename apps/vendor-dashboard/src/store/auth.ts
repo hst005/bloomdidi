@@ -14,6 +14,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   phone: null,
   checkAuth: () => !!api.getToken(),
   login: async (phone, otp) => {
+    await api.fetch('/auth/otp/send', { method: 'POST', body: JSON.stringify({ phone }) });
     const res = await api.fetch<{ accessToken: string }>('/auth/otp/verify', {
       method: 'POST',
       body: JSON.stringify({ phone, otp, role: 'VENDOR' }),

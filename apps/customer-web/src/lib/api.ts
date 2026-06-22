@@ -9,6 +9,10 @@ class ApiClient {
     else localStorage.removeItem('bloomdidi_token');
   }
 
+  getToken() {
+    return this.token;
+  }
+
   async fetch<T>(path: string, init?: RequestInit): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

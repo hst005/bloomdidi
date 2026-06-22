@@ -10,7 +10,7 @@ class ApiClient {
   }
 
   getToken() {
-    return this.token;
+    return this.token ?? localStorage.getItem('bloomdidi_vendor_token');
   }
 
   async fetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -20,10 +20,29 @@ class ApiClient {
     };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
 
-    const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+    let res: Response;
+    try {
+      res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+    } catch {
+      throw new Error(
+        'Cannot reach the API. From the bloomdidi folder run: npm run dev:api (port 3000), then refresh.',
+      );
+    }
+
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.message ?? 'Request failed');
+      const err = await res.json().catch(() => ({}));
+      const apiMessage =
+        typeof err.message === 'string'
+          ? err.message
+          : Array.isArray(err.message)
+            ? err.message.join(', ')
+            : '';
+      if (res.status === 500 && (apiMessage === 'Internal server error' || !apiMessage)) {
+        throw new Error(
+          'API unavailable (proxy error). Start the backend: npm run dev:api — then refresh this page.',
+        );
+      }
+      throw new Error(apiMessage || res.statusText || 'Request failed');
     }
     return res.json();
   }

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Shop } from '@bloomdidi/shared';
-import { DEMO_SHOP_IMAGE, resolveImageUrl } from '../lib/demo-images';
+import { FlowerImage } from './FlowerImage';
+import { formatDistance } from '../lib/format';
 import { useMotionPrefs } from '../store/cart';
 
 interface ShopCardProps {
@@ -23,13 +24,11 @@ export function ShopCard({ shop, index = 0 }: ShopCardProps) {
         className="flex gap-4 p-4 rounded-2xl bg-white border border-brand-100 hover:border-brand-200 hover:shadow-md transition-all group"
       >
         <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
-          <img
-            src={resolveImageUrl(shop.imageUrl, DEMO_SHOP_IMAGE)}
-            alt={shop.name}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = DEMO_SHOP_IMAGE;
-            }}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          <FlowerImage
+            name={shop.name}
+            imageUrl={shop.imageUrl}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
         <div className="flex-1 min-w-0">
@@ -47,7 +46,7 @@ export function ShopCard({ shop, index = 0 }: ShopCardProps) {
             {shop.distanceKm != null && (
               <>
                 <span className="text-brand-300">·</span>
-                <span className="text-brand-400">{shop.distanceKm.toFixed(1)} km</span>
+                <span className="text-brand-400">{formatDistance(shop.distanceKm)}</span>
               </>
             )}
           </div>

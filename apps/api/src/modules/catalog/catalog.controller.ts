@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { CatalogService } from './catalog.service';
 import { Public } from '../../common/decorators/roles.decorator';
@@ -46,5 +46,11 @@ export class CatalogController {
     @Body() dto: UpdateProductDto,
   ) {
     return this.catalogService.update(id, user.sub, dto);
+  }
+
+  @Delete('products/:id')
+  @Roles(UserRole.VENDOR, UserRole.ADMIN)
+  delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.catalogService.delete(id, user.sub);
   }
 }

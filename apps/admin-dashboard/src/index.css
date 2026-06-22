@@ -1,5 +1,11 @@
 @import "tailwindcss";
+@import "../../../packages/design/theme.css";
 
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
+  @apply antialiased;
+}
+
+body.bd-ambient {
+  background: var(--bd-bg);
+  color: var(--bd-ink);
 }

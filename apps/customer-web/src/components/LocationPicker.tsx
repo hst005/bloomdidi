@@ -76,11 +76,11 @@ export function LocationPicker({ open, onClose }: LocationPickerProps) {
                 type="button"
                 onClick={useMyLocation}
                 disabled={geoLoading}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/20 border border-blue-500/40 text-left hover:bg-blue-600/30 transition-colors disabled:opacity-50"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-600/20 border border-brand-500/40 text-left hover:bg-brand-600/30 transition-colors disabled:opacity-50"
               >
                 <span className="text-xl">🎯</span>
                 <div>
-                  <p className="font-medium text-blue-300">
+                  <p className="font-medium text-brand-300">
                     {geoLoading ? 'Getting location…' : 'Use my current location'}
                   </p>
                   <p className="text-xs text-slate-400 mt-0.5">Requires browser permission</p>
@@ -103,7 +103,7 @@ export function LocationPicker({ open, onClose }: LocationPickerProps) {
                     onClick={() => select(preset)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
                       selected
-                        ? 'bg-slate-800 border border-blue-500/50'
+                        ? 'bg-slate-800 border border-brand-500/50'
                         : 'bg-slate-800/50 border border-slate-800 hover:border-slate-600'
                     }`}
                   >
@@ -111,7 +111,7 @@ export function LocationPicker({ open, onClose }: LocationPickerProps) {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-white truncate">{preset.label}</p>
                     </div>
-                    {selected && <span className="text-blue-400 text-sm shrink-0">✓</span>}
+                    {selected && <span className="text-brand-400 text-sm shrink-0">✓</span>}
                   </button>
                 );
               })}

@@ -6,6 +6,7 @@ interface CartState {
   shopId: string | null;
   items: CartItem[];
   addItem: (shopId: string, item: CartItem) => void;
+  setItemQty: (productId: string, qty: number) => void;
   removeItem: (productId: string) => void;
   clear: () => void;
   itemCount: () => number;
@@ -31,6 +32,16 @@ export const useCartStore = create<CartState>()(
             };
           }
           return { shopId, items: [...state.items, item] };
+        }),
+      setItemQty: (productId, qty) =>
+        set((state) => {
+          if (qty < 1) {
+            const items = state.items.filter((i) => i.productId !== productId);
+            return { items, shopId: items.length ? state.shopId : null };
+          }
+          return {
+            items: state.items.map((i) => (i.productId === productId ? { ...i, qty } : i)),
+          };
         }),
       removeItem: (productId) =>
         set((state) => ({

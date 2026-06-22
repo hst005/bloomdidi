@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { PageContainer } from '../components/PageContainer';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api, formatPrice } from '../lib/api';
@@ -15,12 +16,14 @@ import type { Address } from '@bloomdidi/shared';
 type Step = 'login' | 'details' | 'confirm';
 type PaymentMethod = 'COD' | 'UPI' | 'CARD' | 'WALLET';
 
+const isDev = import.meta.env.DEV;
+
 export function CheckoutPage() {
   const localItems = useCartStore((s) => s.items);
   const localClear = useCartStore((s) => s.clear);
   const [step, setStep] = useState<Step>(isLoggedIn() ? 'details' : 'login');
-  const [phone, setPhone] = useState('+919123456789');
-  const [otp, setOtp] = useState('123456');
+  const [phone, setPhone] = useState(isDev ? '+919123456789' : '');
+  const [otp, setOtp] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressId, setAddressId] = useState('');
   const [scheduledFor, setScheduledFor] = useState('');
@@ -121,7 +124,7 @@ export function CheckoutPage() {
       }
 
       localClear();
-      navigate('/', { replace: true, state: { orderPlaced: true } });
+      navigate(`/orders/${order.id}`, { replace: true, state: { orderPlaced: true } });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Order failed');
     } finally {
@@ -135,8 +138,8 @@ export function CheckoutPage() {
     <motion.div
       initial={reduced ? false : { opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
-      className="max-w-lg mx-auto px-4 py-10"
     >
+      <PageContainer className="py-10 max-w-lg">
       <h1 className="font-display text-3xl text-brand-800">Checkout</h1>
       {cart && (
         <p className="text-brand-400 mt-1">Total {formatPrice(total)} incl. delivery</p>
@@ -148,6 +151,9 @@ export function CheckoutPage() {
 
       {step === 'login' && (
         <div className="mt-8 space-y-4">
+          <p className="text-sm text-brand-500">
+            Sign in to complete your order — browse as a guest until checkout.
+          </p>
           <div>
             <label className="block text-sm text-brand-600 mb-1">Phone</label>
             <input
@@ -164,7 +170,7 @@ export function CheckoutPage() {
             Send OTP
           </button>
           <div>
-            <label className="block text-sm text-brand-600 mb-1">OTP (dev: 123456)</label>
+            <label className="block text-sm text-brand-600 mb-1">OTP</label>
             <input
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
@@ -278,6 +284,7 @@ export function CheckoutPage() {
           </button>
         </div>
       )}
+      </PageContainer>
     </motion.div>
   );
 }

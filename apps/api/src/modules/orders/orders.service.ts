@@ -255,7 +255,7 @@ export class OrdersService {
     cardMessage: string | null;
     createdAt: Date;
     shop?: { name: string; ownerId: string };
-    address: {
+    address?: {
       id: string;
       label: string | null;
       recipientName: string;
@@ -298,21 +298,34 @@ export class OrdersService {
         customizations: i.customizations,
         lineTotal: i.lineTotal,
       })),
-      address: {
-        id: order.address.id,
-        label: order.address.label,
-        recipientName: order.address.recipientName,
-        phone: order.address.phone,
-        line1: order.address.line1,
-        line2: order.address.line2,
-        city: order.address.city,
-        state: order.address.state,
-        pincode: order.address.pincode,
-        location:
-          order.address.lat != null && order.address.lng != null
-            ? { lat: order.address.lat, lng: order.address.lng }
-            : null,
-      },
+      address: order.address
+        ? {
+            id: order.address.id,
+            label: order.address.label,
+            recipientName: order.address.recipientName,
+            phone: order.address.phone,
+            line1: order.address.line1,
+            line2: order.address.line2,
+            city: order.address.city,
+            state: order.address.state,
+            pincode: order.address.pincode,
+            location:
+              order.address.lat != null && order.address.lng != null
+                ? { lat: order.address.lat, lng: order.address.lng }
+                : null,
+          }
+        : {
+            id: '',
+            label: null,
+            recipientName: '—',
+            phone: '',
+            line1: 'Address unavailable',
+            line2: null,
+            city: '',
+            state: '',
+            pincode: '',
+            location: null,
+          },
       createdAt: order.createdAt.toISOString(),
     };
   }

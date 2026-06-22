@@ -14,6 +14,11 @@ export class AdminController {
     return this.admin.getDashboard();
   }
 
+  @Get('reports')
+  reports() {
+    return this.admin.getReports();
+  }
+
   @Get('settings')
   getSettings() {
     return this.admin.getSettings();
@@ -29,6 +34,11 @@ export class AdminController {
     return this.admin.listVendors(status);
   }
 
+  @Get('vendors/:id')
+  getVendor(@Param('id') id: string) {
+    return this.admin.getVendor(id);
+  }
+
   @Post('vendors/:id/approve')
   approveVendor(@Param('id') id: string) {
     return this.admin.approveVendor(id);
@@ -42,5 +52,35 @@ export class AdminController {
   @Post('vendors/:id/reactivate')
   reactivateVendor(@Param('id') id: string) {
     return this.admin.reactivateVendor(id);
+  }
+
+  @Get('orders')
+  listOrders(@Query('status') status?: string, @Query('limit') limit?: string) {
+    return this.admin.listOrders(status, limit ? +limit : 100);
+  }
+
+  @Get('customers')
+  listCustomers() {
+    return this.admin.listCustomers();
+  }
+
+  @Get('payouts')
+  listPayouts(@Query('status') status?: string) {
+    return this.admin.listPayouts(status);
+  }
+
+  @Post('payouts/:id/approve')
+  approvePayout(@Param('id') id: string) {
+    return this.admin.approvePayout(id);
+  }
+
+  @Post('payouts/:id/settle')
+  settlePayout(@Param('id') id: string) {
+    return this.admin.settlePayout(id);
+  }
+
+  @Get('disputes')
+  listDisputes() {
+    return this.admin.listDisputes();
   }
 }

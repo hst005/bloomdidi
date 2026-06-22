@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../lib/api';
-import { DEMO_SHOP_IMAGE, resolveImageUrl } from '../lib/demo-images';
+import { formatDistance } from '../lib/format';
+import { FlowerImage } from './FlowerImage';
 
 export interface Florist {
   id: string;
@@ -19,43 +19,44 @@ export interface Florist {
 }
 
 export function FloristCard({ florist, index = 0 }: { florist: Florist; index?: number }) {
-  const [imgSrc, setImgSrc] = useState(() => resolveImageUrl(florist.imageUrl, DEMO_SHOP_IMAGE));
-
-  useEffect(() => {
-    setImgSrc(resolveImageUrl(florist.imageUrl, DEMO_SHOP_IMAGE));
-  }, [florist.imageUrl]);
+  const categories = florist.categories ?? 'Bouquets · Gifting';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06 }}
+      transition={{ delay: index * 0.05 }}
+      style={{ animationDelay: `${index * 50}ms` }}
     >
-      <Link to={`/shop/${florist.id}`} className="block bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-colors">
-        <div className="h-40 bg-slate-800 flex items-center justify-center overflow-hidden">
-          <img
-            src={imgSrc}
-            alt={florist.name}
-            className="w-full h-full object-cover opacity-90"
-            onError={() => setImgSrc(DEMO_SHOP_IMAGE)}
+      <Link
+        to={`/shop/${florist.id}`}
+        className="block bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-colors h-full"
+      >
+        <div className="aspect-[16/10] overflow-hidden">
+          <FlowerImage
+            name={florist.name}
+            imageUrl={florist.imageUrl}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover opacity-90"
           />
         </div>
-        <div className="p-4">
+        <div className="p-3.5">
           <div className="flex justify-between items-start gap-2">
-            <h3 className="font-semibold text-white">{florist.name}</h3>
-            <span className="shrink-0 flex items-center gap-1 text-emerald-400 text-sm font-medium">
+            <h3 className="font-medium text-white">{florist.name}</h3>
+            <span className="shrink-0 text-brand-400 text-sm font-medium whitespace-nowrap">
               ★ {florist.rating.toFixed(1)}
             </span>
           </div>
-          <p className="text-slate-400 text-sm mt-1">{florist.categories ?? 'Bouquets • Gifting'}</p>
-          {florist.description && (
-            <p className="text-slate-500 text-xs mt-1 line-clamp-2">{florist.description}</p>
-          )}
-          <div className="flex items-center gap-3 mt-3 text-xs text-slate-500">
-            <span>📍 {florist.distanceKm.toFixed(1)} km</span>
-            <span>🕐 {florist.deliveryEtaMin}–{florist.deliveryEtaMax} min</span>
-            {florist.minPricePaise && (
-              <span className="text-slate-300 ml-auto">From {formatPrice(florist.minPricePaise)}</span>
+          <p className="text-slate-400 text-sm mt-0.5">{categories.replace(/ • /g, ' · ')}</p>
+          <div className="flex items-center gap-3 mt-2.5 text-xs text-slate-500">
+            <span>{formatDistance(florist.distanceKm)}</span>
+            <span>
+              {florist.deliveryEtaMin}–{florist.deliveryEtaMax} min
+            </span>
+            {florist.minPricePaise != null && (
+              <span className="text-slate-300 ml-auto">
+                From {formatPrice(florist.minPricePaise)}
+              </span>
             )}
           </div>
         </div>

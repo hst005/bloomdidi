@@ -216,7 +216,7 @@ async function main() {
       name: 'Orchid Elegance',
       description: 'Single-stem purple orchid in a ceramic pot — lasts weeks.',
       basePrice: 79900,
-      category: 'Plants',
+      category: 'Gifting',
       stockQty: 12,
       imageUrl: IMG.orchid,
     },
@@ -291,7 +291,7 @@ async function main() {
       basePrice: 119900,
       category: 'Exotic',
       stockQty: 6,
-      imageUrl: IMG.wedding,
+      imageUrl: IMG.lilies,
     },
   ];
 

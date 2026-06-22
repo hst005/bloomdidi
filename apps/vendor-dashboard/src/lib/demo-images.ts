@@ -5,7 +5,7 @@ const API_ORIGIN =
 /** Resolve /demo/* paths via the API static file server */
 export function resolveImageUrl(path: string | null | undefined): string | null {
   if (!path) return null;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) return path;
   if (path.startsWith('/demo/')) return `${API_ORIGIN}${path}`;
   return path;
 }

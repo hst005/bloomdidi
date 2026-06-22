@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -20,7 +20,7 @@ export class CreateProductDto {
   stockQty!: number;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   imageUrl?: string;
 }
 
@@ -48,7 +48,7 @@ export class UpdateProductDto {
   stockQty?: number;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   imageUrl?: string;
 
   @IsOptional()

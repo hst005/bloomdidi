@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Product, Shop } from '@bloomdidi/shared';
 import { formatPrice } from '../lib/api';
-import { DEMO_PRODUCT_IMAGE, resolveImageUrl } from '../lib/demo-images';
+import { FlowerImage } from './FlowerImage';
 import { useCartStore, useFlyStore, useMotionPrefs } from '../store/cart';
 import { addToCart, isLoggedIn } from '../lib/cart-api';
 
@@ -53,15 +53,13 @@ export function BouquetCard({ product, shop, index = 0 }: BouquetCardProps) {
           <div className="card-face">
             <Link to={`/product/${product.id}`} state={{ product, shop }}>
               <div className="rounded-2xl overflow-hidden bg-white shadow-sm border border-brand-100 hover:shadow-md transition-shadow">
-                <div className="aspect-[4/5] overflow-hidden relative">
-                  <motion.img
+        <div className="aspect-[16/10] overflow-hidden relative">
+                  <FlowerImage
                     layoutId={`hero-${product.id}`}
-                    src={resolveImageUrl(product.imageUrl, DEMO_PRODUCT_IMAGE)}
-                    alt={product.name}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = DEMO_PRODUCT_IMAGE;
-                    }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    name={product.name}
+                    imageUrl={product.imageUrl}
+                    className="w-full h-full"
+                    imgClassName="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {product.stockQty <= 5 && (
                     <span className="absolute top-3 left-3 px-2 py-1 bg-brand-700/90 text-white text-xs rounded-full">

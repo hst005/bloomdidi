@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import express from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
@@ -15,7 +14,7 @@ async function bootstrap() {
   // Serve bundled demo florist photos at /demo/* (vendor dashboard + fallback)
   const demoDir = join(process.cwd(), 'assets', 'demo');
   if (existsSync(demoDir)) {
-    app.use('/demo', express.static(demoDir));
+    app.useStaticAssets(demoDir, { prefix: '/demo' });
   }
 
   app.use(helmet());

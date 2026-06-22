@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { OrdersService } from './orders.service';
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator';
@@ -36,14 +36,14 @@ export class OrdersController {
   }
 
   @Get(':id')
-  getOrder(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+  getOrder(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     return this.ordersService.getOrder(id, user.sub, user.role);
   }
 
   @Patch(':id/status')
   @Roles(UserRole.VENDOR, UserRole.ADMIN)
   updateStatus(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: JwtPayload,
     @Body() dto: UpdateOrderStatusDto,
   ) {

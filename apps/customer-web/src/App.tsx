@@ -7,6 +7,8 @@ import { ShopPage } from './pages/ShopPage';
 import { ProductPage } from './pages/ProductPage';
 import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
+import { LoginPage } from './pages/LoginPage';
+import { OrdersPage } from './pages/OrdersPage';
 
 export default function App() {
   const location = useLocation();
@@ -20,7 +22,10 @@ export default function App() {
             <Route path="/shop/:shopId" element={<ShopPage />} />
             <Route path="/product/:productId" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/orders/:orderId" element={<OrdersPage />} />
           </Routes>
         </AnimatePresence>
       </Layout>

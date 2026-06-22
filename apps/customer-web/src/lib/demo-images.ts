@@ -29,9 +29,17 @@ export const DEMO_IMAGES = {
 export const DEMO_SHOP_IMAGE = lilyCo;
 export const DEMO_PRODUCT_IMAGE = defaultProduct;
 
-/** Map API `/demo/...` paths (or null) to bundled asset URLs */
+/** Map API `/demo/...` paths (or null) to bundled asset URLs. Returns empty string when missing. */
 export function resolveImageUrl(path: string | null | undefined, fallback = DEMO_PRODUCT_IMAGE): string {
   if (!path) return fallback;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  if (path.startsWith('data:')) return path;
   return ASSET_MAP[path] ?? fallback;
+}
+
+/** True when we should show the flower placeholder instead of a photo */
+export function shouldUsePlaceholder(path: string | null | undefined): boolean {
+  if (!path?.trim()) return true;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) return false;
+  return !ASSET_MAP[path];
 }

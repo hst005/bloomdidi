@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
@@ -37,7 +37,7 @@ export class CatalogService {
         basePrice: dto.basePrice,
         category: dto.category,
         stockQty: dto.stockQty,
-        imageUrl: dto.imageUrl,
+        imageUrl: dto.imageUrl ?? null,
       },
       include: { customizations: true },
     });
@@ -58,6 +58,28 @@ export class CatalogService {
       include: { customizations: true },
     });
     return this.mapProduct(updated);
+  }
+
+  async delete(productId: string, ownerId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        shop: true,
+        _count: { select: { orderItems: true } },
+      },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+    await this.assertShopOwner(product.shopId, ownerId);
+
+    if (product._count.orderItems > 0) {
+      throw new BadRequestException(
+        'This item has past orders and cannot be deleted. Mark it as unavailable instead.',
+      );
+    }
+
+    await this.prisma.cartItem.deleteMany({ where: { productId } });
+    await this.prisma.product.delete({ where: { id: productId } });
+    return { message: 'Product deleted' };
   }
 
   private async assertShopOwner(shopId: string, ownerId: string) {
