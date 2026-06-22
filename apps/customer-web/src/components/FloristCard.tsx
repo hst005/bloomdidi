@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../lib/api';
+import { DEMO_SHOP_IMAGE } from '../lib/demo-images';
 
 export interface Florist {
   id: string;
@@ -17,6 +19,8 @@ export interface Florist {
 }
 
 export function FloristCard({ florist, index = 0 }: { florist: Florist; index?: number }) {
+  const [imgSrc, setImgSrc] = useState(florist.imageUrl || DEMO_SHOP_IMAGE);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -25,11 +29,12 @@ export function FloristCard({ florist, index = 0 }: { florist: Florist; index?: 
     >
       <Link to={`/shop/${florist.id}`} className="block bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 hover:border-slate-700 transition-colors">
         <div className="h-40 bg-slate-800 flex items-center justify-center overflow-hidden">
-          {florist.imageUrl ? (
-            <img src={florist.imageUrl} alt="" className="w-full h-full object-cover opacity-90" />
-          ) : (
-            <span className="text-4xl">🌸</span>
-          )}
+          <img
+            src={imgSrc}
+            alt={florist.name}
+            className="w-full h-full object-cover opacity-90"
+            onError={() => setImgSrc(DEMO_SHOP_IMAGE)}
+          />
         </div>
         <div className="p-4">
           <div className="flex justify-between items-start gap-2">

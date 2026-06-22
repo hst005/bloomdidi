@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Product, Shop } from '@bloomdidi/shared';
 import { formatPrice } from '../lib/api';
+import { DEMO_PRODUCT_IMAGE } from '../lib/demo-images';
 import { useCartStore, useFlyStore, useMotionPrefs } from '../store/cart';
 import { addToCart, isLoggedIn } from '../lib/cart-api';
 
@@ -55,8 +56,11 @@ export function BouquetCard({ product, shop, index = 0 }: BouquetCardProps) {
                 <div className="aspect-[4/5] overflow-hidden relative">
                   <motion.img
                     layoutId={`hero-${product.id}`}
-                    src={product.imageUrl ?? 'https://images.unsplash.com/photo-1490750967868-88aa4486cfe7?w=600'}
+                    src={product.imageUrl ?? DEMO_PRODUCT_IMAGE}
                     alt={product.name}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = DEMO_PRODUCT_IMAGE;
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {product.stockQty <= 5 && (

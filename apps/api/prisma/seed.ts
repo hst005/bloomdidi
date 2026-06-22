@@ -5,6 +5,19 @@ const prisma = new PrismaClient();
 
 const DEV_OTP_HINT = '123456';
 
+/** Bundled in customer-web/public/demo — reliable local paths (Unsplash CDN links rot) */
+const IMG = {
+  shopLily: '/demo/shops/lily-co.jpg',
+  shopPetal: '/demo/shops/petal-hub.jpg',
+  redRoses: '/demo/products/red-roses.jpg',
+  mixed: '/demo/products/mixed-bouquet.jpg',
+  lilies: '/demo/products/lilies.jpg',
+  wedding: '/demo/products/wedding.jpg',
+  orchid: '/demo/products/orchid.jpg',
+  pastel: '/demo/products/pastel.jpg',
+  default: '/demo/products/default.jpg',
+} as const;
+
 /** Temporary demo credentials — change admin password after first login in production */
 const CREDENTIALS = {
   customer: { phone: '+919123456789', otp: DEV_OTP_HINT },
@@ -103,6 +116,7 @@ async function main() {
       categories: 'Bouquets • Roses • Gifting',
       lat: 28.5244,
       lng: 77.1855,
+      imageUrl: IMG.shopLily,
     },
     create: {
       id: '00000000-0000-4000-8000-000000000001',
@@ -119,7 +133,7 @@ async function main() {
       minPricePaise: 29900,
       categories: 'Bouquets • Roses • Gifting',
       openUntil: '9 PM',
-      imageUrl: 'https://images.unsplash.com/photo-1490750967868-88aa4486cfe7?w=800',
+      imageUrl: IMG.shopLily,
     },
   });
 
@@ -134,6 +148,7 @@ async function main() {
       categories: 'Mixed • Seasonal • Weddings',
       lat: 28.531,
       lng: 77.198,
+      imageUrl: IMG.shopPetal,
     },
     create: {
       id: '00000000-0000-4000-8000-000000000002',
@@ -150,7 +165,7 @@ async function main() {
       minPricePaise: 34900,
       categories: 'Mixed • Seasonal • Weddings',
       openUntil: '9 PM',
-      imageUrl: 'https://images.unsplash.com/photo-1561181286-d3fee7d16964?w=800',
+      imageUrl: IMG.shopPetal,
     },
   });
 
@@ -163,7 +178,7 @@ async function main() {
       basePrice: 89900,
       category: 'Roses',
       stockQty: 15,
-      imageUrl: 'https://images.unsplash.com/photo-1518895949257-762f89edc960?w=600',
+      imageUrl: IMG.redRoses,
     },
     {
       id: '00000000-0000-4000-8000-000000000102',
@@ -173,7 +188,7 @@ async function main() {
       basePrice: 64900,
       category: 'Mixed',
       stockQty: 20,
-      imageUrl: 'https://images.unsplash.com/photo-1582794543139-6282a400796a?w=600',
+      imageUrl: IMG.mixed,
     },
     {
       id: '00000000-0000-4000-8000-000000000103',
@@ -183,7 +198,7 @@ async function main() {
       basePrice: 129900,
       category: 'Occasion',
       stockQty: 8,
-      imageUrl: 'https://images.unsplash.com/photo-1567696912143-888ea5b4c372?w=600',
+      imageUrl: IMG.lilies,
     },
     {
       id: '00000000-0000-4000-8000-000000000104',
@@ -193,7 +208,7 @@ async function main() {
       basePrice: 149900,
       category: 'Gifting',
       stockQty: 10,
-      imageUrl: 'https://images.unsplash.com/photo-1520763185298-1b434c63163c?w=600',
+      imageUrl: IMG.redRoses,
     },
     {
       id: '00000000-0000-4000-8000-000000000105',
@@ -203,7 +218,7 @@ async function main() {
       basePrice: 79900,
       category: 'Plants',
       stockQty: 12,
-      imageUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af2177?w=600',
+      imageUrl: IMG.orchid,
     },
     {
       id: '00000000-0000-4000-8000-000000000106',
@@ -213,7 +228,7 @@ async function main() {
       basePrice: 29900,
       category: 'Bouquets',
       stockQty: 25,
-      imageUrl: 'https://images.unsplash.com/photo-1455659814943-ff5963d9392b?w=600',
+      imageUrl: IMG.pastel,
     },
   ];
 
@@ -226,7 +241,7 @@ async function main() {
       basePrice: 79900,
       category: 'Mixed',
       stockQty: 18,
-      imageUrl: 'https://images.unsplash.com/photo-1455659814943-ff5963d9392b?w=600',
+      imageUrl: IMG.pastel,
     },
     {
       id: '00000000-0000-4000-8000-000000000202',
@@ -236,7 +251,7 @@ async function main() {
       basePrice: 249900,
       category: 'Weddings',
       stockQty: 5,
-      imageUrl: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600',
+      imageUrl: IMG.wedding,
     },
     {
       id: '00000000-0000-4000-8000-000000000203',
@@ -246,7 +261,7 @@ async function main() {
       basePrice: 54900,
       category: 'Seasonal',
       stockQty: 14,
-      imageUrl: 'https://images.unsplash.com/photo-1525311834074-3f1e46c4a8f8?w=600',
+      imageUrl: IMG.mixed,
     },
     {
       id: '00000000-0000-4000-8000-000000000204',
@@ -256,7 +271,7 @@ async function main() {
       basePrice: 59900,
       category: 'Occasion',
       stockQty: 16,
-      imageUrl: 'https://images.unsplash.com/photo-1490750967868-88aa4486cfe7?w=600',
+      imageUrl: IMG.lilies,
     },
     {
       id: '00000000-0000-4000-8000-000000000205',
@@ -266,7 +281,7 @@ async function main() {
       basePrice: 44900,
       category: 'Corporate',
       stockQty: 20,
-      imageUrl: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=600',
+      imageUrl: IMG.orchid,
     },
     {
       id: '00000000-0000-4000-8000-000000000206',
@@ -276,7 +291,7 @@ async function main() {
       basePrice: 119900,
       category: 'Exotic',
       stockQty: 6,
-      imageUrl: 'https://images.unsplash.com/photo-1591886960571-74d43a9d4166?w=600',
+      imageUrl: IMG.wedding,
     },
   ];
 

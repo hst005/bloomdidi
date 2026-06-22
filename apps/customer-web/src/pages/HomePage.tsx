@@ -3,24 +3,24 @@ import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '../lib/api';
 import { FloristCard, type Florist } from '../components/FloristCard';
+import { LocationPicker } from '../components/LocationPicker';
 import { useMotionPrefs } from '../store/cart';
-
-const DEFAULT_LAT = 28.5244;
-const DEFAULT_LNG = 77.1855;
-const LOCATION_LABEL = 'Green Park, South Delhi';
+import { useLocationStore } from '../store/location';
 
 type Sort = 'nearest' | 'rating' | 'price' | 'fastest';
 
 export function HomePage() {
-  const location = useLocation();
+  const routeLocation = useLocation();
+  const deliveryLocation = useLocationStore((s) => s.location);
   const [orderPlaced, setOrderPlaced] = useState(
-    !!(location.state as { orderPlaced?: boolean } | null)?.orderPlaced,
+    !!(routeLocation.state as { orderPlaced?: boolean } | null)?.orderPlaced,
   );
   const [florists, setFlorists] = useState<Florist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sort, setSort] = useState<Sort>('nearest');
   const [search, setSearch] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
   const reduced = useMotionPrefs((s) => s.reducedMotion);
 
   const loadFlorists = useCallback(async () => {
@@ -30,7 +30,7 @@ export function HomePage() {
       const q = search ? `&q=${encodeURIComponent(search)}` : '';
       const maxPrice = sort === 'price' ? '&maxPrice=50000' : '';
       const list = await api.fetch<Florist[]>(
-        `/florists?lat=${DEFAULT_LAT}&lng=${DEFAULT_LNG}&sort=${sort}${q}${maxPrice}`,
+        `/florists?lat=${deliveryLocation.lat}&lng=${deliveryLocation.lng}&sort=${sort}${q}${maxPrice}`,
       );
       setFlorists(list);
     } catch (e) {
@@ -46,7 +46,7 @@ export function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [sort, search]);
+  }, [sort, search, deliveryLocation.lat, deliveryLocation.lng]);
 
   useEffect(() => {
     const t = setTimeout(loadFlorists, search ? 300 : 0);
@@ -74,13 +74,17 @@ export function HomePage() {
       )}
 
       <div className="sticky top-16 z-30 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3">
-        <button className="flex items-center gap-2 text-left w-full">
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="flex items-center gap-2 text-left w-full hover:opacity-90 transition-opacity"
+        >
           <span className="text-blue-400">📍</span>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-xs text-slate-400">Deliver to</p>
-            <p className="font-semibold text-sm">{LOCATION_LABEL}</p>
+            <p className="font-semibold text-sm truncate">{deliveryLocation.label}</p>
           </div>
-          <span className="ml-auto text-slate-500">▾</span>
+          <span className="ml-auto text-slate-500 shrink-0">▾</span>
         </button>
 
         <input
@@ -123,22 +127,21 @@ export function HomePage() {
         ) : florists.length === 0 ? (
           <div className="text-center py-12 px-4">
             <p className="text-slate-500 text-sm">
-              No florists deliver to your area. Try a different location or ask admin to increase discovery radius.
-            </p>
-            <p className="text-slate-600 text-xs mt-3">
-              First time setup? Run <code className="text-slate-400">npm run db:seed</code> to load demo florists.
+              No florists deliver to {deliveryLocation.label}. Try a nearby area or pick Green Park, South Delhi.
             </p>
             <button
-              onClick={loadFlorists}
-              className="mt-4 px-4 py-2 border border-slate-700 rounded-lg text-sm text-slate-300"
+              onClick={() => setPickerOpen(true)}
+              className="mt-4 px-4 py-2 bg-blue-600 rounded-lg text-sm font-medium"
             >
-              Refresh
+              Change location
             </button>
           </div>
         ) : (
           florists.map((f, i) => <FloristCard key={f.id} florist={f} index={i} />)
         )}
       </div>
+
+      <LocationPicker open={pickerOpen} onClose={() => setPickerOpen(false)} />
     </motion.div>
   );
 }
