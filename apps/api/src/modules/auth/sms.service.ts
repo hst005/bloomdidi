@@ -8,9 +8,10 @@ export class SmsService {
   constructor(private config: ConfigService) {}
 
   async sendOtp(phone: string, otp: string): Promise<void> {
-    const authKey = this.config.get<string>('MSG91_AUTH_KEY');
-    if (!authKey) {
-      this.logger.log(`[DEV] OTP for ${phone}: ${otp}`);
+    const authKey = this.config.get<string>('MSG91_AUTH_KEY')?.trim();
+    const templateId = this.config.get<string>('MSG91_TEMPLATE_ID')?.trim();
+    if (!authKey || !templateId) {
+      this.logger.log(`[DEMO] OTP for ${phone}: ${otp}`);
       return;
     }
 

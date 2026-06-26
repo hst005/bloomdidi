@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { DEV_OTP } from '@bloomdidi/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SmsService } from './sms.service';
+import { normalizePhone, resolveOtp } from './otp.util';
 
 @Injectable()
 export class AuthService {
@@ -17,28 +18,29 @@ export class AuthService {
   ) {}
 
   async sendOtp(phone: string) {
-    const hasSms = !!this.config.get('MSG91_AUTH_KEY');
-    const otp = hasSms ? this.generateOtp() : DEV_OTP;
+    const normalized = normalizePhone(phone);
+    const { otp, isDemo } = resolveOtp(normalized, this.config, () => this.generateOtp());
 
     const otpHash = await bcrypt.hash(otp, 10);
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    await this.prisma.otpChallenge.deleteMany({ where: { phone } });
+    await this.prisma.otpChallenge.deleteMany({ where: { phone: normalized } });
     await this.prisma.otpChallenge.create({
-      data: { phone, otpHash, expiresAt },
+      data: { phone: normalized, otpHash, expiresAt },
     });
 
-    await this.sms.sendOtp(phone, otp);
+    await this.sms.sendOtp(normalized, otp);
 
     return {
       message: 'OTP sent',
-      ...(!hasSms ? { devOtp: DEV_OTP } : {}),
+      ...(isDemo ? { devOtp: DEV_OTP } : {}),
     };
   }
 
   async verifyOtp(phone: string, otp: string, name?: string, role?: UserRole) {
+    const normalized = normalizePhone(phone);
     const challenge = await this.prisma.otpChallenge.findFirst({
-      where: { phone },
+      where: { phone: normalized },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -61,11 +63,11 @@ export class AuthService {
 
     await this.prisma.otpChallenge.delete({ where: { id: challenge.id } });
 
-    let user = await this.prisma.user.findUnique({ where: { phone } });
+    let user = await this.prisma.user.findUnique({ where: { phone: normalized } });
     if (!user) {
       user = await this.prisma.user.create({
         data: {
-          phone,
+          phone: normalized,
           name: name ?? null,
           role: role ?? UserRole.CUSTOMER,
         },

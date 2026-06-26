@@ -9,6 +9,7 @@ export {
   DEFAULT_VENDOR_LEAD_TIME_HOURS,
   OTP_LENGTH,
   DEV_OTP,
+  DEMO_PHONES,
 } from './constants';
 export type {
   OrderStatus,

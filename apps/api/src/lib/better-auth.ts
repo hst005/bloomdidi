@@ -5,6 +5,7 @@ import { dash } from '@better-auth/infra';
 import { PrismaClient } from '@prisma/client';
 import { DEV_OTP } from '@bloomdidi/shared';
 import { allowedCorsOrigins } from './cors-origins';
+import { isDemoPhone, smsFullyConfiguredFromEnv } from '../modules/auth/otp.util';
 
 /** Shared Prisma client for Better Auth (separate from Nest DI lifecycle). */
 const prisma = new PrismaClient();
@@ -23,9 +24,9 @@ function trustedOrigins(): string[] {
 }
 
 async function sendOtpSms(phone: string, code: string): Promise<void> {
-  const authKey = process.env.MSG91_AUTH_KEY;
-  if (!authKey) {
-    console.log(`[DEV] Better Auth OTP for ${phone}: ${code}`);
+  const authKey = process.env.MSG91_AUTH_KEY?.trim();
+  if (!authKey || !process.env.MSG91_TEMPLATE_ID?.trim()) {
+    console.log(`[DEMO] Better Auth OTP for ${phone}: ${code}`);
     return;
   }
   // MSG91 wiring — same provider as legacy SmsService
@@ -69,8 +70,8 @@ export const auth = betterAuth({
       expiresIn: 300,
       allowedAttempts: 5,
       sendOTP: async ({ phoneNumber: phone, code }) => {
-        if (!process.env.MSG91_AUTH_KEY) {
-          // Without SMS, Better Auth still generates a random code — store the demo OTP instead.
+        const useDemoOtp = isDemoPhone(phone) || !smsFullyConfiguredFromEnv();
+        if (useDemoOtp) {
           await prisma.verification.updateMany({
             where: { identifier: phone },
             data: { value: `${DEV_OTP}:0` },
