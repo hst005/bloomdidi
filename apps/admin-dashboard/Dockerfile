@@ -12,8 +12,8 @@ RUN npm run build -w @bloomdidi/admin-dashboard
 FROM nginx:1.27-alpine
 RUN apk add --no-cache gettext
 COPY docker/frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
-COPY docker/frontend/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+COPY docker/frontend/docker-entrypoint.sh /usr/local/bin/bloomdidi-entrypoint.sh
+RUN chmod +x /usr/local/bin/bloomdidi-entrypoint.sh
 COPY --from=builder /app/apps/admin-dashboard/dist /usr/share/nginx/html
 EXPOSE 8080
-CMD ["/docker-entrypoint.sh"]
+CMD ["/usr/local/bin/bloomdidi-entrypoint.sh"]

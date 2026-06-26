@@ -4,12 +4,52 @@ Each service uses the **repo root** as root directory and its own **Dockerfile**
 
 ## Services checklist
 
-| Service | Dockerfile | Public URL (example) |
-|---------|------------|------------------------|
-| `@bloomdidi/api` | `apps/api/Dockerfile` | `https://bloomdidiapi-production.up.railway.app` |
-| `@bloomdidi/customer-web` | `apps/customer-web/Dockerfile` | `https://bloomdidicustomer-web-production.up.railway.app` |
-| `@bloomdidi/vendor-dashboard` | `apps/vendor-dashboard/Dockerfile` | `https://bloomdidivendor-dashboard-production.up.railway.app` |
-| `@bloomdidi/admin-dashboard` | `apps/admin-dashboard/Dockerfile` | **Create this service** — 404 means it is not deployed yet |
+| Service | Dockerfile | Status check |
+|---------|------------|--------------|
+| `@bloomdidi/api` | `apps/api/Dockerfile` | `GET /api/auth/ok` → 200 |
+| `@bloomdidi/customer-web` | `apps/customer-web/Dockerfile` | Home page loads |
+| `@bloomdidi/vendor-dashboard` | `apps/vendor-dashboard/Dockerfile` | Login page loads |
+| `@bloomdidi/admin-dashboard` | `apps/admin-dashboard/Dockerfile` | Login page loads |
+
+---
+
+## Admin dashboard — 404 or 502 fix
+
+**404 “The train has not arrived”** = service/domain not linked yet.  
+**502 “Application failed to respond”** = container crashed or wrong builder/port.
+
+### Railway settings (admin service)
+
+| Setting | Value |
+|---------|-------|
+| **Root directory** | `/` (repo root — **not** `apps/admin-dashboard`) |
+| **Builder** | Dockerfile |
+| **Dockerfile path** | `apps/admin-dashboard/Dockerfile` |
+| **Custom build command** | *(empty)* |
+| **Custom start command** | *(empty)* |
+| **Config file** *(optional)* | `apps/admin-dashboard/railway.toml` |
+
+### Variables (admin only needs this)
+
+```env
+API_UPSTREAM=https://bloomdidiapi-production.up.railway.app
+```
+
+**Do NOT add** `POSTGRES_*` or `REDIS_PORT` on frontends — Railway suggests those from `docker-compose.yml` for **local dev only**. They belong on the Postgres/Redis/API services, not admin/customer/vendor.
+
+### Networking
+
+1. Open **Settings → Networking**
+2. Generate domain if missing
+3. Port = **8080** (or whatever Railway shows in **Variables → PORT**)
+
+### Redeploy
+
+After changing settings: **Deployments → Redeploy**.  
+In **Deploy logs** you should see Docker build steps (`nginx:1.27-alpine`, `npm run build -w @bloomdidi/admin-dashboard`).  
+If you see Nixpacks/Railpack instead, the Dockerfile path is wrong.
+
+---
 
 ## @bloomdidi/api
 
@@ -17,23 +57,16 @@ Each service uses the **repo root** as root directory and its own **Dockerfile**
 |---------|-------|
 | Root directory | `/` |
 | Dockerfile path | `apps/api/Dockerfile` |
-| Custom build command | *(empty)* |
-| Custom start command | *(empty)* |
-| Public port | Match Railway **Variables → PORT** (usually **8080**) |
+| Custom build / start | *(empty)* |
+| Public port | Match Railway **PORT** (usually **8080**) |
 
 Required variables: see `docs/BETTER_AUTH.md` and `apps/api/.env.example`.
 
-**CORS:** The API auto-allows any `*.up.railway.app` origin. You can still set explicit URLs:
+Connect Railway Postgres → set `DATABASE_URL` on the **API** service (not frontends).
 
-```env
-CORS_ORIGINS=https://bloomdidicustomer-web-production.up.railway.app,https://bloomdidivendor-dashboard-production.up.railway.app,https://bloomdidiadmin-dashboard-production.up.railway.app
-```
+Optional seed (API shell): `npx prisma db seed` — demo shops also auto-create on first request.
 
-After first deploy, seed the database (Railway → API service → Shell):
-
-```bash
-npx prisma db seed
-```
+---
 
 ## Frontends (customer, vendor, admin)
 
@@ -42,36 +75,32 @@ npx prisma db seed
 | Root directory | `/` |
 | Dockerfile path | `apps/<app>/Dockerfile` |
 | Custom build / start | *(empty)* |
-| Public port | Match Railway **PORT** (usually **8080**) |
 
-**Runtime variable** (Settings → Variables — no rebuild needed when API URL changes):
+Runtime variable:
 
 ```env
 API_UPSTREAM=https://bloomdidiapi-production.up.railway.app
 ```
 
-Frontends proxy `/api/*` to the API via nginx, so the browser calls same-origin `/api/v1/...` — no CORS issues.
+Frontends proxy `/api/*` to the API via nginx (same-origin, no CORS).
 
-`VITE_API_URL` / `VITE_API_ORIGIN` at build time are **optional** (local dev still uses Vite proxy on port 5173–5175).
+---
 
-## Deploy admin dashboard (if you see Railway 404)
+## Demo logins
 
-1. Railway project → **New service** → **GitHub repo** → same `bloomdidi` repo  
-2. Settings → **Dockerfile path**: `apps/admin-dashboard/Dockerfile`  
-3. Variables → `API_UPSTREAM=https://bloomdidiapi-production.up.railway.app`  
-4. Networking → generate domain on port **8080**  
-5. Redeploy  
+| Portal | Credentials |
+|--------|-------------|
+| Customer | `+919123456789` / OTP `123456` |
+| Vendor | `+919876543210` / OTP `123456` |
+| Admin | `admin@bloomdidi.com` / `Admin@123456` |
 
-## Verify
+Admin login requires API DB with admin user — run `npx prisma db seed` on API if login fails.
 
-1. API: `GET /api/auth/ok` → 200  
-2. Customer: home page loads florists (or empty list after seed — not “Load failed”)  
-3. Vendor: OTP login works (`+919876543210` / `123456` in dev seed)  
-4. Admin: login page loads (`admin@bloomdidi.com` / `Admin@123456`)  
+---
 
-## Order
+## Deploy order
 
-1. Deploy **api** → confirm `/api/auth/ok`  
-2. Deploy customer + vendor (+ admin if missing)  
-3. Set `API_UPSTREAM` on each frontend  
-4. Seed production DB if feed is empty  
+1. Postgres + Redis (or Railway plugins) → API with `DATABASE_URL`, `REDIS_URL`
+2. Deploy **api** → `/api/auth/ok` returns 200
+3. Deploy customer, vendor, admin with `API_UPSTREAM`
+4. Set API `CORS_ORIGINS` to frontend URLs *(optional — `*.up.railway.app` auto-allowed)*
