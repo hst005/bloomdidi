@@ -39,9 +39,11 @@ API_UPSTREAM=https://bloomdidiapi-production.up.railway.app
 
 ### Networking
 
-1. Open **Settings → Networking**
-2. Generate domain if missing
-3. Port = **8080** (or whatever Railway shows in **Variables → PORT**)
+1. Open **Settings → Networking → Public Networking**
+2. Edit the domain — set port to **8080** (NOT 5175 — that is only the local Vite dev port)
+3. Railway’s `PORT` variable is usually `8080`; the public domain **must match** what nginx listens on
+
+**If you see 502 with Dockerfile configured correctly:** almost always the domain is on port **5175** while the container listens on **8080**. Change it and redeploy is not required — it takes effect immediately.
 
 ### Redeploy
 
