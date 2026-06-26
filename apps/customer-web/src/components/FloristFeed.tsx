@@ -85,8 +85,16 @@ export function FloristFeed({ orderPlaced, onDismissOrderPlaced }: FloristFeedPr
         </div>
       )}
 
-      <div className="bd-feed-toolbar py-3">
+      <div className="bd-feed-toolbar py-4">
         <PageContainer>
+          <div style={{ maxWidth: 720, margin: '0 auto 12px', padding: '0 0 4px' }}>
+            <h1 className="font-display text-2xl sm:text-3xl font-normal tracking-tight" style={{ color: 'var(--bd-ink)', margin: 0 }}>
+              Florists near you
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--bd-ink-soft)' }}>
+              Curated local partners · Same-day delivery · Enterprise-grade tracking
+            </p>
+          </div>
           <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 0 8px' }}>
             <LocationBar location={deliveryLocation.label} onClick={() => setPickerOpen(true)} />
             <SearchBar value={search} onChange={setSearch} />

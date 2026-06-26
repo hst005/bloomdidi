@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Order, Product, Shop } from '@bloomdidi/shared';
+import { BrandMark } from '@bloomdidi/design/BrandMark';
+import { ThemeToggle } from '@bloomdidi/design/ThemeToggle';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
-import { ThemeToggle } from '@bloomdidi/design/ThemeToggle';
 import { OrdersPanel } from '../components/OrdersPanel';
 import { InventoryPanel } from '../components/InventoryPanel';
 import { EarningsPanel } from '../components/EarningsPanel';
@@ -62,45 +63,30 @@ export function DashboardPage() {
   }, [loadActiveCount, loadProducts]);
 
   return (
-    <div className="min-h-screen flex flex-col w-full min-w-0 overflow-x-hidden bd-ambient">
-      <header
-        className="shrink-0"
-        style={{
-          background: 'var(--bd-surface)',
-          borderBottom: '1px solid var(--bd-border)',
-          color: 'var(--bd-ink)',
-        }}
-      >
-        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pr-12 py-4 flex items-center justify-between gap-4 min-w-0">
-          <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold truncate">
-              Bloom<span style={{ color: 'var(--bd-rose)' }}>Didi</span> Vendor
-            </h1>
-            {currentShop && (
-              <p className="text-sm truncate" style={{ color: 'var(--bd-ink-soft)' }}>
-                {currentShop.name}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <ThemeToggle />
-            <button
-              type="button"
-              onClick={logout}
-              className="bd-btn bd-btn-ghost text-sm"
-            >
-              Logout
-            </button>
-          </div>
+    <div className="bd-portal-shell bd-ambient">
+      <header className="bd-portal-topbar">
+        <div className="bd-portal-topbar-meta">
+          <BrandMark portal="vendor" size="sm" />
+          {currentShop && (
+            <p className="bd-portal-topbar-sub" style={{ marginTop: 8 }}>
+              {currentShop.name}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <ThemeToggle />
+          <button type="button" onClick={logout} className="bd-btn bd-btn-outline text-sm">
+            Sign out
+          </button>
         </div>
       </header>
 
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pr-10 py-6 flex-1 min-w-0">
+      <div className="bd-portal-body">
         {shops.length > 1 && (
           <select
             value={shopId}
             onChange={(e) => setShopId(e.target.value)}
-            className="mb-4 px-3 py-2 rounded-lg border border-slate-200 text-sm w-full max-w-xs"
+            className="bd-select mb-4 max-w-xs"
           >
             {shops.map((s) => (
               <option key={s.id} value={s.id}>
@@ -110,19 +96,17 @@ export function DashboardPage() {
           </select>
         )}
 
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="bd-segmented">
           {(['orders', 'inventory', 'earnings', 'store'] as const).map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`bd-filter-chip capitalize${tab === t ? ' is-active' : ''}`}
+              className={`bd-segmented-btn capitalize${tab === t ? ' is-active' : ''}`}
             >
               {t}
               {t === 'orders' && activeOrderCount > 0 && (
-                <span className="ml-2 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
-                  {activeOrderCount}
-                </span>
+                <span style={{ marginLeft: 6, opacity: 0.9 }}>({activeOrderCount})</span>
               )}
             </button>
           ))}

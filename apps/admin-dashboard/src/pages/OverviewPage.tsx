@@ -28,19 +28,15 @@ export function OverviewPage() {
 
   return (
     <div className="bd-rise">
-      <PageHeader title="Overview" />
+      <PageHeader
+        title="Overview"
+        lead="Platform health, revenue performance, and vendor pipeline."
+      />
 
       {error && <div className="bd-error" style={{ marginBottom: 16 }}>{error}</div>}
 
       {dashboard && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: 12,
-            marginBottom: 28,
-          }}
-        >
+        <div className="bd-kpi-grid">
           <KpiCard label="Active florists" value={dashboard.activeFlorists} />
           <KpiCard label="Orders today" value={dashboard.ordersToday} />
           <KpiCard label="GMV today" value={fmt(dashboard.gmvToday)} />

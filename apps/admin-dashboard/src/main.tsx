@@ -6,6 +6,8 @@ import { AppRoutes } from './App';
 import { LoginPage } from './pages/LoginPage';
 import './index.css';
 
+document.documentElement.setAttribute('data-portal', 'admin');
+
 function Root() {
   const [authed, setAuthed] = useState(!!api.token);
   const [checking, setChecking] = useState(!!api.token);

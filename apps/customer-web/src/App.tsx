@@ -15,20 +15,27 @@ export default function App() {
 
   return (
     <>
-      <Layout>
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/shop/:shopId" element={<ShopPage />} />
-            <Route path="/product/:productId" element={<ProductPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/orders/:orderId" element={<OrdersPage />} />
-          </Routes>
-        </AnimatePresence>
-      </Layout>
+      <Routes location={location}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/*"
+          element={
+            <Layout>
+              <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/shop/:shopId" element={<ShopPage />} />
+                  <Route path="/product/:productId" element={<ProductPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/orders" element={<OrdersPage />} />
+                  <Route path="/orders/:orderId" element={<OrdersPage />} />
+                </Routes>
+              </AnimatePresence>
+            </Layout>
+          }
+        />
+      </Routes>
       <FlyToCart />
     </>
   );

@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { PageContainer } from '../components/PageContainer';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AuthShell } from '@bloomdidi/design/AuthShell';
 import { authClient } from '../lib/auth-client';
 import { useAuthStore } from '../store/auth';
 import { syncLocalCartToServer } from '../lib/cart-api';
@@ -60,40 +59,42 @@ export function LoginPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      <PageContainer className="py-12 max-w-md">
-      <h1 className="font-display text-3xl text-brand-800">Sign in</h1>
-      <p className="text-brand-500 mt-2 text-sm">
-        OTP login — save addresses, track orders, and checkout faster.
-      </p>
-
-      <div className="mt-4 p-3 rounded-xl bg-brand-50 border border-brand-100 text-xs text-brand-600">
-        <p className="font-medium">Demo customer</p>
-        <p className="mt-1">Phone: {DEMO_PHONE} · OTP: {DEMO_OTP}</p>
+    <AuthShell
+      portal="customer"
+      title="Sign in to BloomDidi"
+      subtitle="Secure OTP login — save addresses, track orders, and checkout faster."
+      footer={
+        <Link to="/">← Continue browsing without signing in</Link>
+      }
+    >
+      <div className="bd-callout">
+        <strong>Demo account</strong>
+        Phone {DEMO_PHONE} · OTP {DEMO_OTP}
       </div>
 
-      {error && (
-        <p className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{error}</p>
-      )}
+      {error && <div className="bd-error" style={{ marginTop: 16 }}>{error}</div>}
 
-      <form onSubmit={handleLogin} className="mt-8 space-y-4">
+      <form onSubmit={handleLogin} className="bd-form-stack" style={{ marginTop: 20 }}>
         <div>
-          <label className="block text-sm font-medium text-brand-700 mb-1">Your name</label>
+          <label className="bd-label" htmlFor="login-name">Full name</label>
           <input
+            id="login-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            className="bd-input"
             placeholder="Priya Sharma"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-brand-700 mb-1">Phone number</label>
+          <label className="bd-label" htmlFor="login-phone">Phone number</label>
           <input
+            id="login-phone"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            className="bd-input"
             placeholder="+919123456789"
+            autoComplete="tel"
           />
         </div>
 
@@ -101,35 +102,29 @@ export function LoginPage() {
           type="button"
           onClick={handleSendOtp}
           disabled={loading}
-          className="text-sm text-brand-600 hover:text-brand-800 underline"
+          className="bd-btn bd-btn-ghost self-start text-sm px-0"
         >
-          {otpSent ? 'Resend OTP' : 'Send OTP'}
+          {otpSent ? 'Resend verification code' : 'Send verification code'}
         </button>
 
         <div>
-          <label className="block text-sm font-medium text-brand-700 mb-1">OTP</label>
+          <label className="bd-label" htmlFor="login-otp">Verification code</label>
           <input
+            id="login-otp"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            className="bd-input"
             placeholder="6-digit code"
             maxLength={6}
+            inputMode="numeric"
+            autoComplete="one-time-code"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3.5 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 transition-colors disabled:opacity-50"
-        >
-          {loading ? 'Signing in…' : 'Sign in'}
+        <button type="submit" disabled={loading} className="bd-btn bd-btn-primary w-full">
+          {loading ? 'Signing in…' : 'Continue'}
         </button>
       </form>
-
-      <p className="mt-6 text-center text-sm text-brand-400">
-        <Link to="/" className="hover:text-brand-600">← Continue browsing without signing in</Link>
-      </p>
-      </PageContainer>
-    </motion.div>
+    </AuthShell>
   );
 }

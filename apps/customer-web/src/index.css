@@ -2,20 +2,8 @@
 @import "../../../packages/design/theme.css";
 
 @theme {
-  --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-display: "Playfair Display", Georgia, serif;
-  --color-brand-50: #fdf4f5;
-  --color-brand-100: #fce8ea;
-  --color-brand-200: #f9d0d6;
-  --color-brand-300: #f4a9b4;
-  --color-brand-400: #ec7589;
-  --color-brand-500: #df4a64;
-  --color-brand-600: #c9304f;
-  --color-brand-700: #a8243f;
-  --color-brand-800: #8c2139;
-  --color-brand-900: #772035;
-  --color-sage-500: #6b8f71;
-  --color-cream: #faf7f2;
+  --font-sans: var(--bd-font-sans);
+  --font-display: var(--bd-font-display);
 }
 
 html {

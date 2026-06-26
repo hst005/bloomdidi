@@ -1,8 +1,12 @@
 @import "tailwindcss";
 @import "../../../packages/design/theme.css";
 
+@theme {
+  --font-sans: var(--bd-font-sans);
+}
+
 body {
-  @apply antialiased;
+  @apply font-sans antialiased;
 }
 
 body.bd-ambient {

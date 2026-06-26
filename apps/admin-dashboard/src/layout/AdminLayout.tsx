@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { BrandMark } from '@bloomdidi/design/BrandMark';
 import { ThemeToggle } from '@bloomdidi/design/ThemeToggle';
 import { api } from '../lib/api';
 
@@ -21,33 +22,15 @@ export function AdminLayout() {
   };
 
   return (
-    <div
-      className="bd-ambient"
-      style={{
-        display: 'flex',
-        minHeight: '100vh',
-        background: 'var(--bd-bg)',
-      }}
-    >
-      <aside
-        className="bd-sidebar"
-        style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
-      >
-        <div
-          style={{
-            fontWeight: 500,
-            fontSize: 18,
-            marginBottom: 20,
-            color: 'var(--bd-rose)',
-          }}
-        >
-          BloomDidi
-        </div>
-        <p style={{ fontSize: 12, color: 'var(--bd-ink-soft)', marginTop: -12, marginBottom: 16 }}>
-          Admin
+    <div className="bd-ambient" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bd-bg)' }}>
+      <aside className="bd-sidebar" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <BrandMark portal="admin" size="md" />
+        <p className="bd-page-lead" style={{ marginTop: 8, marginBottom: 16, fontSize: 13 }}>
+          Marketplace operations
         </p>
         <ThemeToggle />
-        <nav style={{ flex: 1, marginTop: 12 }}>
+        <nav style={{ flex: 1, marginTop: 20 }}>
+          <p className="bd-sidebar-label">Platform</p>
           {NAV.map(({ to, label, ...rest }) => (
             <NavLink
               key={to}
@@ -59,14 +42,14 @@ export function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <div style={{ marginTop: 'auto', paddingTop: 24 }}>
+        <div className="bd-sidebar-section">
           <button type="button" onClick={logout} className="bd-nav-btn">
-            Logout
+            Sign out
           </button>
         </div>
       </aside>
-      <main style={{ flex: 1, minWidth: 0, padding: 28, overflow: 'auto' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+      <main className="bd-admin-main">
+        <div className="bd-admin-content">
           <Outlet />
         </div>
       </main>

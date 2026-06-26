@@ -30,33 +30,38 @@ export function KpiCard({
   sub?: string;
 }) {
   return (
-    <div className="bd-card bd-card-static" style={{ padding: 16 }}>
-      <div style={{ fontSize: 13, color: 'var(--bd-ink-soft)' }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 500, marginTop: 4, color: 'var(--bd-ink)' }}>
-        {value}
-      </div>
-      {sub && (
-        <div style={{ fontSize: 12, color: 'var(--bd-ink-soft)', marginTop: 4 }}>{sub}</div>
-      )}
+    <div className="bd-kpi bd-rise">
+      <div className="bd-kpi-label">{label}</div>
+      <div className="bd-kpi-value">{value}</div>
+      {sub && <div className="bd-kpi-sub">{sub}</div>}
     </div>
   );
 }
 
-export function PageHeader({ title, action }: { title: string; action?: ReactNode }) {
+export function PageHeader({
+  title,
+  lead,
+  action,
+}: {
+  title: string;
+  lead?: string;
+  action?: ReactNode;
+}) {
   return (
     <div
       style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
-        marginBottom: 24,
-        gap: 12,
+        marginBottom: 28,
+        gap: 16,
         flexWrap: 'wrap',
       }}
     >
-      <h1 style={{ margin: 0, fontSize: 24, fontWeight: 500, color: 'var(--bd-ink)' }}>
-        {title}
-      </h1>
+      <div>
+        <h1 className="bd-page-title">{title}</h1>
+        {lead && <p className="bd-page-lead">{lead}</p>}
+      </div>
       {action}
     </div>
   );
@@ -76,7 +81,7 @@ export function Th({ children, className = '' }: { children: ReactNode; classNam
 
 export function Td({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <td className={className} style={{ color: 'var(--bd-ink-soft)' }}>
+    <td className={className} style={{ color: 'var(--bd-ink-muted)' }}>
       {children}
     </td>
   );

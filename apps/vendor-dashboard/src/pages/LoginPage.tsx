@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthShell } from '@bloomdidi/design/AuthShell';
 import { useAuthStore } from '../store/auth';
 import { api } from '../lib/api';
 
@@ -39,7 +40,7 @@ export function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim() || !otp.trim()) {
-      setError('Enter phone and OTP.');
+      setError('Enter phone and verification code.');
       return;
     }
     setLoading(true);
@@ -55,79 +56,82 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-slate-850">
-      <form
-        onSubmit={handleLogin}
-        className="w-full max-w-sm p-8 bg-white rounded-2xl shadow-xl"
-      >
-        <h1 className="text-2xl font-bold text-brand-800">BloomDidi Vendor</h1>
-        <p className="text-sm text-slate-500 mt-1">Sign in to manage orders & inventory</p>
+    <AuthShell
+      portal="vendor"
+      title="Vendor sign in"
+      subtitle="Manage orders, inventory, earnings, and your storefront."
+    >
+      {isDev && (
+        <div className="bd-callout">
+          <strong>Quick select (dev)</strong>
+          {DEMO_FLORISTS.map((f) => (
+            <button
+              key={f.phone}
+              type="button"
+              onClick={() => {
+                setPhone(f.phone);
+                setError('');
+              }}
+              className="bd-btn bd-btn-ghost block w-full text-left mt-2 px-2 py-1.5 text-sm"
+              style={{
+                background: phone === f.phone ? 'var(--bd-accent-soft)' : 'transparent',
+              }}
+            >
+              {f.shop} — {f.phone}
+            </button>
+          ))}
+        </div>
+      )}
 
-        {isDev && (
-          <div className="mt-4 p-3 bg-brand-50 rounded-xl text-xs text-brand-700 space-y-1.5">
-            <p className="font-medium">Quick select (dev only)</p>
-            {DEMO_FLORISTS.map((f) => (
-              <button
-                key={f.phone}
-                type="button"
-                onClick={() => {
-                  setPhone(f.phone);
-                  setError('');
-                }}
-                className={`block w-full text-left px-2 py-1 rounded ${phone === f.phone ? 'bg-brand-100 font-medium' : 'hover:bg-brand-50'}`}
-              >
-                {f.shop} — {f.phone}
-              </button>
-            ))}
-          </div>
-        )}
+      {error && <div className="bd-error" style={{ marginTop: 16 }}>{error}</div>}
 
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
-        <label className="block mt-6 text-sm font-medium text-slate-600">Phone</label>
-        <input
-          value={phone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            setError('');
-            setOtpSent(false);
-          }}
-          className="mt-1 w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none"
-          placeholder="+919876543210"
-          autoComplete="tel"
-        />
+      <form onSubmit={handleLogin} className="bd-form-stack" style={{ marginTop: 20 }}>
+        <div>
+          <label className="bd-label" htmlFor="vendor-phone">Phone</label>
+          <input
+            id="vendor-phone"
+            value={phone}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              setError('');
+              setOtpSent(false);
+            }}
+            className="bd-input"
+            placeholder="+919876543210"
+            autoComplete="tel"
+          />
+        </div>
 
         <button
           type="button"
           onClick={handleSendOtp}
           disabled={loading}
-          className="mt-2 text-sm text-brand-600 hover:underline disabled:opacity-50"
+          className="bd-btn bd-btn-ghost self-start text-sm px-0"
         >
-          {otpSent ? 'Resend OTP' : 'Send OTP'}
+          {otpSent ? 'Resend verification code' : 'Send verification code'}
         </button>
 
-        <label className="block mt-4 text-sm font-medium text-slate-600">OTP</label>
-        <input
-          value={otp}
-          onChange={(e) => {
-            setOtp(e.target.value);
-            setError('');
-          }}
-          className="mt-1 w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none"
-          placeholder="6-digit code"
-          inputMode="numeric"
-          maxLength={6}
-          autoComplete="one-time-code"
-        />
+        <div>
+          <label className="bd-label" htmlFor="vendor-otp">Verification code</label>
+          <input
+            id="vendor-otp"
+            value={otp}
+            onChange={(e) => {
+              setOtp(e.target.value);
+              setError('');
+            }}
+            className="bd-input"
+            placeholder="6-digit code"
+            inputMode="numeric"
+            maxLength={6}
+            autoComplete="one-time-code"
+          />
+        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-6 w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
-        >
-          {loading ? 'Signing in…' : 'Sign in'}
+        <button type="submit" disabled={loading} className="bd-btn bd-btn-primary w-full">
+          {loading ? 'Signing in…' : 'Enter dashboard'}
         </button>
       </form>
-    </div>
+    </AuthShell>
   );
 }
