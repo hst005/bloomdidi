@@ -1,6 +1,6 @@
 const API_ORIGIN =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/api\/v1\/?$/, '') ||
-  'http://localhost:3000';
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5174');
 
 /** Resolve /demo/* paths via the API static file server */
 export function resolveImageUrl(path: string | null | undefined): string | null {

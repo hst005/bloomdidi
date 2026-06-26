@@ -6,6 +6,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { corsOriginCallback } from './lib/cors-origins';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -22,7 +23,7 @@ async function bootstrap() {
 
   app.use(helmet());
   app.enableCors({
-    origin: config.get<string>('CORS_ORIGINS')?.split(',') ?? ['http://localhost:5173'],
+    origin: corsOriginCallback,
     credentials: true,
   });
 

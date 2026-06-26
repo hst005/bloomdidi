@@ -4,18 +4,22 @@ import { bearer, phoneNumber } from 'better-auth/plugins';
 import { dash } from '@better-auth/infra';
 import { PrismaClient } from '@prisma/client';
 import { DEV_OTP } from '@bloomdidi/shared';
+import { allowedCorsOrigins } from './cors-origins';
 
 /** Shared Prisma client for Better Auth (separate from Nest DI lifecycle). */
 const prisma = new PrismaClient();
 
-function corsOrigins(): string[] {
-  return (
-    process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()) ?? [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-    ]
-  );
+function trustedOrigins(): string[] {
+  const origins = allowedCorsOrigins();
+  // Better Auth validates exact origins; include known Railway hosts when env is unset.
+  if (!process.env.CORS_ORIGINS?.trim()) {
+    origins.push(
+      'https://bloomdidicustomer-web-production.up.railway.app',
+      'https://bloomdidivendor-dashboard-production.up.railway.app',
+      'https://bloomdidiadmin-dashboard-production.up.railway.app',
+    );
+  }
+  return [...new Set(origins)];
 }
 
 async function sendOtpSms(phone: string, code: string): Promise<void> {
@@ -43,7 +47,7 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
   basePath: '/api/auth',
   secret: process.env.BETTER_AUTH_SECRET ?? process.env.JWT_SECRET!,
-  trustedOrigins: corsOrigins(),
+  trustedOrigins: trustedOrigins(),
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
   emailAndPassword: {
     enabled: true,

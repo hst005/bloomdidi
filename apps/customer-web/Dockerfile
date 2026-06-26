@@ -1,4 +1,4 @@
-# BloomDidi customer web (static Vite build)
+# BloomDidi customer web (static Vite build + nginx API proxy)
 FROM node:20-alpine AS builder
 WORKDIR /app
 
@@ -9,17 +9,13 @@ COPY apps/customer-web ./apps/customer-web
 
 RUN npm ci --workspace=@bloomdidi/customer-web --include-workspace-root
 RUN npm run build -w @bloomdidi/shared
-
-ARG VITE_API_URL
-ARG VITE_API_ORIGIN
-ENV VITE_API_URL=$VITE_API_URL
-ENV VITE_API_ORIGIN=$VITE_API_ORIGIN
-
 RUN npm run build -w @bloomdidi/customer-web
 
-FROM node:20-alpine
-WORKDIR /app
-RUN npm install -g serve@14
-COPY --from=builder /app/apps/customer-web/dist ./dist
+FROM nginx:1.27-alpine
+RUN apk add --no-cache gettext
+COPY docker/frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY docker/frontend/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+COPY --from=builder /app/apps/customer-web/dist /usr/share/nginx/html
 EXPOSE 8080
-CMD ["sh", "-c", "serve dist -s -p ${PORT:-8080}"]
+CMD ["/docker-entrypoint.sh"]

@@ -1,7 +1,9 @@
 import { createAuthClient } from 'better-auth/react';
 import { phoneNumberClient } from 'better-auth/client/plugins';
 
-const API_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? 'http://localhost:3000';
+const API_ORIGIN =
+  import.meta.env.VITE_API_ORIGIN ??
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173');
 
 export const authClient = createAuthClient({
   baseURL: API_ORIGIN,
