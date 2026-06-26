@@ -15,6 +15,7 @@ export function LoginPage() {
   const [phone, setPhone] = useState(isDev ? DEMO_FLORISTS[0].phone : '');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [devOtpHint, setDevOtpHint] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((s) => s.login);
@@ -28,7 +29,11 @@ export function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await api.fetch('/auth/otp/send', { method: 'POST', body: JSON.stringify({ phone }) });
+      const res = await api.fetch<{ message: string; devOtp?: string }>(
+        '/auth/otp/send',
+        { method: 'POST', body: JSON.stringify({ phone }) },
+      );
+      setDevOtpHint(res.devOtp ?? '');
       setOtpSent(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to send OTP');
@@ -41,6 +46,10 @@ export function LoginPage() {
     e.preventDefault();
     if (!phone.trim() || !otp.trim()) {
       setError('Enter phone and verification code.');
+      return;
+    }
+    if (!otpSent) {
+      setError('Tap “Send verification code” first.');
       return;
     }
     setLoading(true);
@@ -95,6 +104,7 @@ export function LoginPage() {
               setPhone(e.target.value);
               setError('');
               setOtpSent(false);
+              setDevOtpHint('');
             }}
             className="bd-input"
             placeholder="+919876543210"
@@ -110,6 +120,12 @@ export function LoginPage() {
         >
           {otpSent ? 'Resend verification code' : 'Send verification code'}
         </button>
+
+        {devOtpHint && (
+          <p className="text-sm" style={{ color: 'var(--bd-ink-soft)' }}>
+            Demo OTP (no SMS configured): <strong style={{ color: 'var(--bd-ink)' }}>{devOtpHint}</strong>
+          </p>
+        )}
 
         <div>
           <label className="bd-label" htmlFor="vendor-otp">Verification code</label>

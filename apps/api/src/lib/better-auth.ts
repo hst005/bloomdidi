@@ -69,8 +69,14 @@ export const auth = betterAuth({
       expiresIn: 300,
       allowedAttempts: 5,
       sendOTP: async ({ phoneNumber: phone, code }) => {
-        if (process.env.NODE_ENV !== 'production' && phone.endsWith('9123456789')) {
-          console.log(`[DEV] Better Auth OTP for ${phone}: ${DEV_OTP} (sent: ${code})`);
+        if (!process.env.MSG91_AUTH_KEY) {
+          // Without SMS, Better Auth still generates a random code — store the demo OTP instead.
+          await prisma.verification.updateMany({
+            where: { identifier: phone },
+            data: { value: `${DEV_OTP}:0` },
+          });
+          console.log(`[DEMO] Better Auth OTP for ${phone}: ${DEV_OTP}`);
+          return;
         }
         await sendOtpSms(phone, code);
       },

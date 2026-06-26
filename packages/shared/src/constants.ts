@@ -65,3 +65,11 @@ export const DEFAULT_DELIVERY_RADIUS_KM = 5;
 export const DEFAULT_VENDOR_LEAD_TIME_HOURS = 2;
 export const OTP_LENGTH = 6;
 export const DEV_OTP = '123456';
+
+/** Seeded demo accounts — fixed OTP when SMS (MSG91) is not configured. */
+export const DEMO_PHONES = [
+  '+919123456789',
+  '+919876543210',
+  '+919876543211',
+  '+919999999999',
+] as const;

@@ -17,10 +17,8 @@ export class AuthService {
   ) {}
 
   async sendOtp(phone: string) {
-    const otp =
-      this.config.get('NODE_ENV') === 'development' && !this.config.get('MSG91_AUTH_KEY')
-        ? DEV_OTP
-        : this.generateOtp();
+    const hasSms = !!this.config.get('MSG91_AUTH_KEY');
+    const otp = hasSms ? this.generateOtp() : DEV_OTP;
 
     const otpHash = await bcrypt.hash(otp, 10);
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -34,7 +32,7 @@ export class AuthService {
 
     return {
       message: 'OTP sent',
-      ...(this.config.get('NODE_ENV') === 'development' ? { devOtp: DEV_OTP } : {}),
+      ...(!hasSms ? { devOtp: DEV_OTP } : {}),
     };
   }
 
