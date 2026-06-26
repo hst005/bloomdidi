@@ -7,6 +7,7 @@ import { DEV_OTP } from '@bloomdidi/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SmsService } from './sms.service';
 import { normalizePhone, resolveOtp } from './otp.util';
+import { ensureDemoAdminUser, isDemoAdminEmail } from '../shops/demo-shop.bootstrap';
 
 @Injectable()
 export class AuthService {
@@ -130,6 +131,10 @@ export class AuthService {
   }
 
   async adminLogin(email: string, password: string) {
+    if (isDemoAdminEmail(email)) {
+      await ensureDemoAdminUser(this.prisma);
+    }
+
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || user.role !== UserRole.ADMIN || !user.passwordHash) {
       throw new UnauthorizedException('Invalid email or password');

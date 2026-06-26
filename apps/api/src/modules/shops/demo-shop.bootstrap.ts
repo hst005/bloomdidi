@@ -1,5 +1,13 @@
 import { PrismaClient, UserRole, VendorStatus } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { normalizePhone } from '../auth/otp.util';
+
+export const DEMO_ADMIN = {
+  email: 'admin@bloomdidi.com',
+  password: 'Admin@123456',
+  phone: '+919999999999',
+  name: 'BloomDidi Admin',
+} as const;
 
 const DEMO_VENDOR_BOOTSTRAP: Record<
   string,
@@ -182,6 +190,31 @@ export function isDemoVendorPhone(phone: string): boolean {
   return normalizePhone(phone) in DEMO_VENDOR_BOOTSTRAP;
 }
 
+export function isDemoAdminEmail(email: string): boolean {
+  return email.trim().toLowerCase() === DEMO_ADMIN.email;
+}
+
+/** Create demo admin when production DB was never seeded. */
+export async function ensureDemoAdminUser(prisma: PrismaClient): Promise<void> {
+  const passwordHash = await bcrypt.hash(DEMO_ADMIN.password, 10);
+  await prisma.user.upsert({
+    where: { email: DEMO_ADMIN.email },
+    update: {
+      role: UserRole.ADMIN,
+      name: DEMO_ADMIN.name,
+      passwordHash,
+      phone: DEMO_ADMIN.phone,
+    },
+    create: {
+      email: DEMO_ADMIN.email,
+      phone: DEMO_ADMIN.phone,
+      passwordHash,
+      name: DEMO_ADMIN.name,
+      role: UserRole.ADMIN,
+    },
+  });
+}
+
 /** Seed demo florists on empty production DB (first customer or vendor request). */
 export async function ensureDemoCatalogIfEmpty(prisma: PrismaClient): Promise<void> {
   const count = await prisma.shop.count();
@@ -196,4 +229,6 @@ export async function ensureDemoCatalogIfEmpty(prisma: PrismaClient): Promise<vo
     });
     await ensureDemoVendorShop(prisma, user.id, phone);
   }
+
+  await ensureDemoAdminUser(prisma);
 }
