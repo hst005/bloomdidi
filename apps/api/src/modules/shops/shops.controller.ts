@@ -19,7 +19,7 @@ export class ShopsController {
   @Get('vendor/mine')
   @Roles(UserRole.VENDOR, UserRole.ADMIN)
   findMine(@CurrentUser() user: JwtPayload) {
-    return this.shopsService.findByOwner(user.sub);
+    return this.shopsService.findByOwner(user.sub, user.phone);
   }
 
   @Public()

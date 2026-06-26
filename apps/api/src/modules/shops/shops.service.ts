@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ensureDemoVendorShop, ensureDemoCatalogIfEmpty } from './demo-shop.bootstrap';
 
 const DEFAULT_HOURS: Record<string, { open: string; close: string; closed: boolean }> = {
   Mon: { open: '09:00', close: '21:00', closed: false },
@@ -49,8 +50,15 @@ export class ShopsService {
     return this.mapShop(shop);
   }
 
-  async findByOwner(ownerId: string) {
-    const shops = await this.prisma.shop.findMany({ where: { ownerId } });
+  async findByOwner(ownerId: string, phone?: string) {
+    await ensureDemoCatalogIfEmpty(this.prisma);
+    let shops = await this.prisma.shop.findMany({ where: { ownerId } });
+    if (shops.length === 0 && phone) {
+      const bootstrapped = await ensureDemoVendorShop(this.prisma, ownerId, phone);
+      if (bootstrapped) {
+        shops = await this.prisma.shop.findMany({ where: { ownerId } });
+      }
+    }
     return shops.map((s) => this.mapShop(s));
   }
 

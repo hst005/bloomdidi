@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { VendorStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
+import { ensureDemoCatalogIfEmpty } from '../shops/demo-shop.bootstrap';
 
 export type FloristSort = 'nearest' | 'rating' | 'price' | 'fastest';
 
@@ -56,6 +57,7 @@ export class GeoService {
     q?: string,
     maxPricePaise?: number,
   ): Promise<FloristResult[]> {
+    await ensureDemoCatalogIfEmpty(this.prisma);
     const { globalDiscoveryRadiusKm } = await this.settings.get();
     const globalRadiusM = globalDiscoveryRadiusKm * 1000;
 

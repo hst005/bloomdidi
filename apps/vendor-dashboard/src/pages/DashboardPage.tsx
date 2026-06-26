@@ -11,6 +11,8 @@ import { StoreProfilePanel } from '../components/StoreProfilePanel';
 
 export function DashboardPage() {
   const [shops, setShops] = useState<Shop[]>([]);
+  const [shopsLoading, setShopsLoading] = useState(true);
+  const [shopsError, setShopsError] = useState('');
   const [shopId, setShopId] = useState('');
   const [activeOrderCount, setActiveOrderCount] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
@@ -21,10 +23,19 @@ export function DashboardPage() {
   const currentShop = shops.find((s) => s.id === shopId) ?? shops[0];
 
   const loadShops = useCallback(async () => {
-    const list = await api.fetch<Shop[]>('/shops/vendor/mine');
-    setShops(list);
-    if (list[0] && !shopId) setShopId(list[0].id);
-  }, [shopId]);
+    setShopsLoading(true);
+    setShopsError('');
+    try {
+      const list = await api.fetch<Shop[]>('/shops/vendor/mine');
+      setShops(list);
+      if (list[0]) setShopId((current) => current || list[0].id);
+    } catch (e) {
+      setShops([]);
+      setShopsError(e instanceof Error ? e.message : 'Could not load your store');
+    } finally {
+      setShopsLoading(false);
+    }
+  }, []);
 
   const loadActiveCount = useCallback(async () => {
     if (!shopId) return;
@@ -111,6 +122,31 @@ export function DashboardPage() {
             </button>
           ))}
         </div>
+
+        {shopsLoading && (
+          <div style={{ padding: '48px 0', textAlign: 'center', color: 'var(--bd-ink-soft)' }}>
+            Loading your storefront…
+          </div>
+        )}
+
+        {!shopsLoading && shopsError && (
+          <div className="bd-error" style={{ marginTop: 16 }}>
+            {shopsError}
+            <button type="button" onClick={() => loadShops()} className="bd-btn bd-btn-outline text-sm ml-3">
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!shopsLoading && !shopsError && shops.length === 0 && (
+          <div className="bd-callout" style={{ marginTop: 16, maxWidth: 480 }}>
+            <strong>No store linked to this account</strong>
+            <p style={{ margin: '8px 0 0', color: 'var(--bd-ink-soft)', fontSize: 14 }}>
+              Demo vendors use <code>+919876543210</code> or <code>+919876543211</code>. Sign out and
+              sign in again with a demo number, or contact support to link your shop.
+            </p>
+          </div>
+        )}
 
         {tab === 'orders' && shopId && <OrdersPanel shopId={shopId} />}
 
