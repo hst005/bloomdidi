@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BrandMark } from '@bloomdidi/design/BrandMark';
 import { ThemeToggle } from '@bloomdidi/design/ThemeToggle';
 import { useCartStore } from '../store/cart';
 import { useAuthStore } from '../store/auth';
 import { PageContainer } from './PageContainer';
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout() {
   const count = useCartStore((s) => s.itemCount());
   const location = useLocation();
   const { isAuthenticated, phone, name, logout, hydrate } = useAuthStore();
@@ -86,7 +86,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </PageContainer>
       </header>
-      <main className="flex-1 min-w-0">{children}</main>
+      <main className="flex-1 min-w-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
+      </main>
       <footer className="bd-app-footer py-10 text-center text-sm">
         <PageContainer>
           <p style={{ color: 'var(--bd-ink-soft)', margin: 0 }}>
